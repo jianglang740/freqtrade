@@ -1,0 +1,144 @@
+{
+    // ================================================================
+    // Freqtrade Kraken 现货配置（中文注释版）
+    // ================================================================
+    // 本配置适用于 Kraken 交易所现货交易，欧元（EUR）计价。
+    // Kraken 的特色：支持 EUR 交易对，手续费较低，API 限速较宽松。
+    // ================================================================
+
+    "$schema": "https://schema.freqtrade.io/schema.json",
+
+    // 最大同时持仓数量
+    "max_open_trades": 5,
+
+    // 报价货币（Kraken 常用 EUR）
+    "stake_currency": "EUR",
+
+    // 每笔交易投入金额（EUR）
+    "stake_amount": 10,
+
+    // 可用资金比例
+    "tradable_balance_ratio": 0.99,
+
+    // 法币显示货币
+    "fiat_display_currency": "EUR",
+
+    // K线时间周期
+    "timeframe": "5m",
+
+    // 模拟交易开关
+    "dry_run": true,
+
+    // 退出时不取消挂单
+    "cancel_open_orders_on_exit": false,
+
+    // =================================================================
+    // 未成交订单超时
+    // =================================================================
+    "unfilledtimeout": {
+        "entry": 10,
+        "exit": 10,
+        "exit_timeout_count": 0,
+        "unit": "minutes"
+    },
+
+    // =================================================================
+    // 入场定价（同 Binance 配置）
+    // =================================================================
+    "entry_pricing": {
+        "price_side": "same",
+        "use_order_book": true,
+        "order_book_top": 1,
+        "price_last_balance": 0.0,
+        "check_depth_of_market": {
+            "enabled": false,
+            "bids_to_ask_delta": 1
+        }
+    },
+
+    // =================================================================
+    // 离场定价
+    // =================================================================
+    "exit_pricing": {
+        "price_side": "same",
+        "use_order_book": true,
+        "order_book_top": 1
+    },
+
+    // =================================================================
+    // 交易所（Kraken 现货）
+    // =================================================================
+    "exchange": {
+        "name": "kraken",
+
+        // 模拟模式可留空，实盘去 Kraken 后台创建 API Key
+        "key": "your_exchange_key",
+        "secret": "your_exchange_key",
+
+        "ccxt_config": {},
+        "ccxt_async_config": {},
+
+        // ======= 交易对白名单 =======
+        // Kraken 欧元现货交易对
+        "pair_whitelist": [
+            "ADA/EUR",
+            "ATOM/EUR",
+            "BAT/EUR",
+            "BCH/EUR",
+            "BTC/EUR",
+            "DAI/EUR",
+            "DASH/EUR",
+            "EOS/EUR",
+            "ETC/EUR",
+            "ETH/EUR",
+            "LINK/EUR",
+            "LTC/EUR",
+            "QTUM/EUR",
+            "REP/EUR",
+            "WAVES/EUR",
+            "XLM/EUR",
+            "XMR/EUR",
+            "XRP/EUR",
+            "XTZ/EUR",
+            "ZEC/EUR"
+        ],
+
+        // 黑名单（Kraken 示例中为空）
+        "pair_blacklist": []
+    },
+
+    // 交易对过滤链：仅静态白名单
+    "pairlists": [
+        {"method": "StaticPairList"}
+    ],
+
+    // Telegram 通知
+    "telegram": {
+        "enabled": false,
+        "token": "your_telegram_token",
+        "chat_id": "your_telegram_chat_id"
+    },
+
+    // Web API 服务器
+    "api_server": {
+        "enabled": false,
+        "listen_ip_address": "127.0.0.1",
+        "listen_port": 8080,
+        "verbosity": "error",
+        "jwt_secret_key": "somethingRandomSomethingRandom123",
+        "CORS_origins": [],
+        "username": "freqtrader",
+        "password": "SuperSecurePassword"
+    },
+
+    "bot_name": "freqtrade",
+    "initial_state": "running",
+    "force_entry_enable": false,
+
+    "internals": {
+        "process_throttle_secs": 5
+    },
+
+    // Kraken 特色：是否下载已完成的交易数据（Kraken 不直接提供 OHLCV 下载，需要此选项）
+    "download_trades": true
+}

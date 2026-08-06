@@ -1,0 +1,147 @@
+{
+    // ================================================================
+    // Freqtrade Binance 现货配置（中文注释版）
+    // ================================================================
+    // 本配置适用于 Binance 现货交易，USDT 计价。
+    // ================================================================
+
+    "$schema": "https://schema.freqtrade.io/schema.json",
+
+    // 最大同时持仓数量
+    "max_open_trades": 3,
+
+    // 报价货币（Binance 现货常用 USDT）
+    "stake_currency": "USDT",
+
+    // 每笔交易投入金额（USDT）
+    "stake_amount": 30,
+
+    // 可用资金比例，0.99 = 保留 1%
+    "tradable_balance_ratio": 0.99,
+
+    // 法币显示货币
+    "fiat_display_currency": "USD",
+
+    // K线时间周期
+    "timeframe": "5m",
+
+    // 模拟交易开关
+    "dry_run": true,
+
+    // 退出时不取消挂单
+    "cancel_open_orders_on_exit": false,
+
+    // =================================================================
+    // 未成交订单超时
+    // =================================================================
+    "unfilledtimeout": {
+        "entry": 10,               // 入场单 10 分钟未成交则取消
+        "exit": 10,                // 离场单 10 分钟未成交则取消
+        "exit_timeout_count": 0,   // 0 = 不强制市价离场
+        "unit": "minutes"
+    },
+
+    // =================================================================
+    // 入场定价
+    // =================================================================
+    "entry_pricing": {
+        "price_side": "same",          // 买用卖一价
+        "use_order_book": true,        // 使用订单簿
+        "order_book_top": 1,           // 取最优 1 档
+        "price_last_balance": 0.0,     // 完全使用订单簿价
+        "check_depth_of_market": {
+            "enabled": false,          // 不做市场深度检查
+            "bids_to_ask_delta": 1
+        }
+    },
+
+    // =================================================================
+    // 离场定价
+    // =================================================================
+    "exit_pricing": {
+        "price_side": "same",
+        "use_order_book": true,
+        "order_book_top": 1
+    },
+
+    // =================================================================
+    // 交易所（Binance 现货）
+    // =================================================================
+    "exchange": {
+        "name": "binance",
+
+        // 模拟模式可留空，实盘去 Binance 后台创建 API Key
+        "key": "your_exchange_key",
+        "secret": "your_exchange_secret",
+
+        // ccxt 配置
+        "ccxt_config": {},
+        "ccxt_async_config": {},
+
+        // ======= 交易对白名单 =======
+        // Binance 现货格式：BASE/USDT
+        "pair_whitelist": [
+            "ALGO/USDT",
+            "ATOM/USDT",
+            "BAT/USDT",
+            "BCH/USDT",
+            "BRD/USDT",
+            "EOS/USDT",
+            "ETH/USDT",
+            "IOTA/USDT",
+            "LINK/USDT",
+            "LTC/USDT",
+            "NEO/USDT",
+            "NXS/USDT",
+            "XMR/USDT",
+            "XRP/USDT",
+            "XTZ/USDT"
+        ],
+
+        // ======= 交易对黑名单 =======
+        // 支持正则："BNB/.*" 排除所有 BNB 相关交易对
+        "pair_blacklist": [
+            "BNB/.*"
+        ]
+    },
+
+    // =================================================================
+    // 交易对过滤链：只使用静态白名单，不做其他过滤
+    // =================================================================
+    "pairlists": [
+        {"method": "StaticPairList"}
+    ],
+
+    // =================================================================
+    // Telegram 通知
+    // =================================================================
+    "telegram": {
+        "enabled": false,
+        "token": "your_telegram_token",
+        "chat_id": "your_telegram_chat_id"
+    },
+
+    // =================================================================
+    // Web API 服务器
+    // =================================================================
+    "api_server": {
+        "enabled": false,
+        "listen_ip_address": "127.0.0.1",
+        "listen_port": 8080,
+        "verbosity": "error",
+        // JWT 密钥（生产环境请修改为随机长字符串）
+        "jwt_secret_key": "somethingRandomSomethingRandom123",
+        "CORS_origins": [],
+        "username": "freqtrader",
+        "password": "SuperSecurePassword"
+    },
+
+    "bot_name": "freqtrade",
+    "initial_state": "running",
+    "force_entry_enable": false,
+
+    // 主循环间隔（秒）
+    "internals": {
+        "process_throttle_secs": 5
+    }
+}

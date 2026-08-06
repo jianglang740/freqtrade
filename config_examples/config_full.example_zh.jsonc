@@ -1,0 +1,527 @@
+{
+    // ================================================================
+    // Freqtrade 完整配置参考（中文注释版）
+    // ================================================================
+    // 本文件包含 freqtrade 所有常用配置项及其详细中文说明。
+    // 使用时请删除注释，或直接复制需要的配置项到你的 config.json 中。
+    // ================================================================
+
+    // 配置文件的 JSON Schema，用于编辑器自动补全和校验
+    "$schema": "https://schema.freqtrade.io/schema.json",
+
+    // =================================================================
+    // 一、资金与仓位管理
+    // =================================================================
+
+    // 最大同时持仓数量。例如设为 3，就最多同时持有 3 个币的仓位
+    "max_open_trades": 3,
+
+    // 报价货币。例如 USDT、BTC、EUR。所有交易以此货币计价
+    "stake_amount": 0.05,
+
+    // 每笔交易投入的金额（单位=stake_currency）。设为 "unlimited" 则不限额
+    // 如果 stake_currency=USDT，stake_amount=0.05 就是每笔投 0.05 USDT
+    "stake_currency": "BTC",
+
+    // 可用资金比例。0.99 表示保留 1% 资金在钱包中不动
+    // 设小一点可以应对手续费波动，防止资金不足
+    "tradable_balance_ratio": 0.99,
+
+    // 法币显示货币，用于界面/Telegram 中把收益换算显示（不影响交易）
+    "fiat_display_currency": "USD",
+
+    // 预留金额比例。每笔交易实际投入 = stake_amount * (1 - amount_reserve_percent)
+    // 0.05 = 预留 5%，防止手续费导致资金不足
+    "amount_reserve_percent": 0.05,
+
+    // 可用本金上限（单位=stake_currency）。总仓位不会超过此值。不设则为钱包余额
+    "available_capital": 1000,
+
+    // 是否用最后一笔交易的金额来调整新开仓金额。用于 DCA（定投/加仓）策略
+    "amend_last_stake_amount": false,
+
+    // 当 amend_last_stake_amount=true 时，最后一笔金额的最低比例限制
+    // 0.5 表示新金额不能低于原金额的 50%
+    "last_stake_amount_min_ratio": 0.5,
+
+    // =================================================================
+    // 二、运行模式
+    // =================================================================
+
+    // 是否启用模拟交易。true=模拟（不实际下单），false=实盘
+    // 强烈建议先在 dry_run=true 下充分测试！
+    "dry_run": true,
+
+    // 模拟模式下的初始钱包余额（单位=stake_currency）
+    "dry_run_wallet": 1000,
+
+    // 退出时是否取消所有未成交的挂单
+    "cancel_open_orders_on_exit": false,
+
+    // 初始状态：running=启动即交易，stopped=启动后等待手动指令
+    "initial_state": "running",
+
+    // 机器人名称，显示在 Telegram 消息和 WebUI 中
+    "bot_name": "freqtrade",
+
+    // 是否允许通过 Telegram/API 强制买入（手动干预）
+    "force_entry_enable": false,
+
+    // =================================================================
+    // 三、时间框架
+    // =================================================================
+
+    // K线时间周期。常用：1m(分钟) / 5m / 15m / 1h(小时) / 4h / 1d(天)
+    "timeframe": "5m",
+
+    // =================================================================
+    // 四、交易模式（现货 / 合约）
+    // =================================================================
+
+    // 交易模式：spot=现货，futures=合约，margin=杠杆
+    "trading_mode": "spot",
+
+    // 保证金模式（仅合约）：isolated=逐仓，cross=全仓。现货留空即可
+    "margin_mode": "",
+
+    // =================================================================
+    // 五、止损与止盈
+    // =================================================================
+
+    // 止盈曲线（最小 ROI）。key=持有分钟数，value=最小盈利率
+    // "40": 0.0  → 持有 40 分钟后，盈利 ≥ 0% 就卖（即不亏就卖）
+    // "30": 0.01 → 持有 30 分钟，盈利 ≥ 1% 就卖
+    // "20": 0.02 → 持有 20 分钟，盈利 ≥ 2% 就卖
+    // "0": 0.04  → 买入后立即，盈利 ≥ 4% 就卖
+    // 逻辑：持仓越久，止盈门槛越低，鼓励及时获利了结
+    "minimal_roi": {
+        "40": 0.0,
+        "30": 0.01,
+        "20": 0.02,
+        "0": 0.04
+    },
+
+    // 止损比例。负数表示亏损百分比。-0.10 = 亏 10% 就止损
+    "stoploss": -0.10,
+
+    // 是否启用移动止损。true 的话止损线会随价格上涨而上移
+    "trailing_stop": false,
+
+    // 移动止损触发阈值。价格盈利 0.5% 后，止损线开始跟随移动
+    "trailing_stop_positive": 0.005,
+
+    // 移动止损首次偏移量。价格到达 trailing_stop_positive_offset 后才激活
+    // 必须大于 trailing_stop_positive
+    "trailing_stop_positive_offset": 0.0051,
+
+    // 是否只有到达 offset 后才开始移动止损（true），还是一激活就跟随（false）
+    "trailing_only_offset_is_reached": false,
+
+    // =================================================================
+    // 六、买卖信号控制
+    // =================================================================
+
+    // 是否使用策略中 populate_exit_trend 的卖出信号。建议开启
+    "use_exit_signal": true,
+
+    // 是否只在盈利时才卖出。true=不割肉，false=信号到了就卖
+    "exit_profit_only": false,
+
+    // 盈利偏移量。exit_profit_only=true 时，要求盈利超过此值才卖
+    "exit_profit_offset": 0.0,
+
+    // 是否忽略 ROI，只依据买入信号来开仓（用于只做买入的策略）
+    "ignore_roi_if_entry_signal": false,
+
+    // 忽略超时的买入信号（秒）。例如超过 300 秒（5 分钟）未成交的买单取消后，
+    // 在原信号周期内不再重新买入。默认 0 表示限价单取消后立即可以再买
+    "ignore_buying_expired_candle_after": 300,
+
+    // =================================================================
+    // 七、订单类型
+    // =================================================================
+
+    "order_types": {
+        // 入场订单类型：limit=限价单，market=市价单
+        "entry": "limit",
+        // 离场订单类型
+        "exit": "limit",
+        // 紧急离场（风控触发）
+        "emergency_exit": "market",
+        // 强制离场（如 /forceexit 命令）
+        "force_exit": "market",
+        // 强制入场（如 /forceenter 命令）
+        "force_entry": "market",
+        // 止损单类型
+        "stoploss": "market",
+
+        // 是否在交易所挂止损单（true）还是本地追踪（false）
+        // true 更安全（断网也执行），但部分交易所不支持
+        "stoploss_on_exchange": false,
+
+        // 止损触发价参考：last=最新成交价，mark=标记价，index=指数价
+        "stoploss_price_type": "last",
+
+        // 止损单更新间隔（秒），仅限 limit 止损
+        "stoploss_on_exchange_interval": 60,
+
+        // 止损限价单的价格比例。0.99 表示止损触发价 * 99%，给出 1% 滑点容差
+        "stoploss_on_exchange_limit_ratio": 0.99
+    },
+
+    // =================================================================
+    // 八、订单有效期
+    // =================================================================
+
+    "order_time_in_force": {
+        // GTC=Good Till Cancel（一直有效直到成交或取消）
+        // IOC=Immediate Or Cancel（立即成交或取消）
+        // FOK=Fill Or Kill（全部成交或取消）
+        "entry": "GTC",
+        "exit": "GTC"
+    },
+
+    // =================================================================
+    // 九、未成交订单超时
+    // =================================================================
+
+    "unfilledtimeout": {
+        // 入场订单超时。超时后自动取消并重新下单
+        "entry": 10,
+        // 离场订单超时
+        "exit": 10,
+        // 超时多少次后改用市价单强制离场。0=永不强制
+        "exit_timeout_count": 0,
+        // 时间单位：minutes 或 seconds
+        "unit": "minutes"
+    },
+
+    // =================================================================
+    // 十、入场定价
+    // =================================================================
+
+    "entry_pricing": {
+        // 买入参考价：ask=卖一价，bid=买一价，same=同向（买用ask，卖用bid），other=反向
+        "price_side": "same",
+
+        // 是否使用订单簿深度来调整价格
+        "use_order_book": true,
+
+        // 取订单簿前 N 档的均价。1=只取最优价
+        "order_book_top": 1,
+
+        // 价格平衡因子。0.0=完全使用订单簿价，1.0=完全使用最新成交价
+        // 0.5=订单簿价和最新成交价各占一半
+        "price_last_balance": 0.0,
+
+        // 市场深度检查。当买卖盘深度不平衡时拒绝入场
+        "check_depth_of_market": {
+            "enabled": false,
+            // 买卖盘深度差阈值。1 表示买盘比卖盘多 1 倍才入场
+            "bids_to_ask_delta": 1
+        }
+    },
+
+    // =================================================================
+    // 十一、离场定价（同上结构）
+    // =================================================================
+
+    "exit_pricing": {
+        "price_side": "same",
+        "use_order_book": true,
+        "order_book_top": 1,
+        "price_last_balance": 0.0
+    },
+
+    // =================================================================
+    // 十二、交易对过滤链（按顺序执行）
+    // =================================================================
+    // pairlists 是一个过滤器链，按数组顺序依次过滤交易对。
+
+    "pairlists": [
+        // ① StaticPairList：使用 exchange.pair_whitelist 里的静态列表
+        // 必须放在最前面，作为初始交易对池
+        {
+            "method": "StaticPairList"
+        },
+        // ② DelistFilter：过滤即将下架的币
+        {
+            "method": "DelistFilter",
+            // 只保留从现在起 N 天后才下架的币
+            "max_days_from_now": 0
+        },
+        // ③ FullTradesFilter：过滤不能完整交易的最小单位量（lot size constraint）
+        {
+            "method": "FullTradesFilter"
+        },
+        // ④ VolumePairList：按成交量排序，只保留前 N 个
+        {
+            "method": "VolumePairList",
+            // 保留的币对数量
+            "number_assets": 20,
+            // 排序依据：quoteVolume=按报价货币成交量排序
+            "sort_key": "quoteVolume",
+            // 刷新间隔（秒）。1800=每半小时重新排序
+            "refresh_period": 1800
+        },
+        // ⑤ AgeFilter：过滤上线不足 N 天的新币
+        {
+            "method": "AgeFilter",
+            // 至少上线 10 天
+            "min_days_listed": 10
+        },
+        // ⑥ PrecisionFilter：过滤精度不足以正确下单的币对
+        {
+            "method": "PrecisionFilter"
+        },
+        // ⑦ PriceFilter：过滤价格过低/过高的币对
+        {
+            "method": "PriceFilter",
+            // 最低价格与最大价格的比值。0.01 = 最低价必须 ≥ 最高价的 1%
+            "low_price_ratio": 0.01,
+            // 绝对最低价，低于此价格的币对过滤掉
+            "min_price": 0.00000010
+        },
+        // ⑧ SpreadFilter：过滤买卖价差过大的币对（流动性差）
+        {
+            "method": "SpreadFilter",
+            // 最大价差比率。0.005 = 0.5%
+            "max_spread_ratio": 0.005
+        },
+        // ⑨ RangeStabilityFilter：过滤价格波动过大不稳定的币对
+        {
+            "method": "RangeStabilityFilter",
+            // 回看天数
+            "lookback_days": 10,
+            // 最低变化率（绝对值）。0.01 = 1%，低于说明没波动
+            "min_rate_of_change": 0.01,
+            // 刷新间隔（秒）
+            "refresh_period": 1440
+        }
+    ],
+
+    // =================================================================
+    // 十三、交易所配置
+    // =================================================================
+
+    "exchange": {
+        // 交易所名称（使用 ccxt 的交易所 ID）
+        // 常用：binance, okx, bybit, kraken, gate, bitget, hyperliquid
+        "name": "binance",
+
+        // API Key（dry_run 模式下可留空）
+        "key": "your_exchange_key",
+        // API Secret（dry_run 模式下可留空）
+        "secret": "your_exchange_secret",
+        // 交易所账户密码（绝大多数交易所不需要）
+        "password": "",
+
+        // 是否在日志中记录交易所返回的原始响应（调试用，建议 false）
+        "log_responses": false,
+
+        // 自定义手续费率（当 ccxt 获取不到时使用）。单位：千分比
+        // "unknown_fee_rate": 1,
+
+        // 传递给 ccxt 的额外配置参数
+        // 例如：{"enableRateLimit": true} 开启请求频率限制
+        "ccxt_config": {},
+        // 传递给 ccxt 异步客户端的额外配置参数
+        "ccxt_async_config": {},
+
+        // ======= 交易对白名单 =======
+        // 你要交易的币对列表（格式："BASE/QUOTE"，合约用 "BASE/QUOTE:结算货币"）
+        "pair_whitelist": [
+            "ALGO/BTC",
+            "ATOM/BTC",
+            "BAT/BTC",
+            "BCH/BTC",
+            "BRD/BTC",
+            "EOS/BTC",
+            "ETH/BTC",
+            "IOTA/BTC",
+            "LINK/BTC",
+            "LTC/BTC",
+            "NEO/BTC",
+            "NXS/BTC",
+            "XMR/BTC",
+            "XRP/BTC",
+            "XTZ/BTC"
+        ],
+
+        // ======= 交易对黑名单 =======
+        // 支持正则表达式。例如 "DOGE/BTC" 精确匹配，"BNB/.*" 匹配所有 BNB 交易对
+        "pair_blacklist": [
+            "DOGE/BTC"
+        ],
+
+        // K线数据过期容忍度（分钟）。超过此时间未收到新K线视为过期
+        "outdated_offset": 5,
+
+        // 市场数据刷新间隔（分钟）。频繁改可能被交易所限速
+        "markets_refresh_interval": 60
+    },
+
+    // =================================================================
+    // 十四、Telegram 通知
+    // =================================================================
+
+    "telegram": {
+        // 是否启用 Telegram 机器人
+        "enabled": false,
+
+        // 从 @BotFather 获取的 Token
+        "token": "your_telegram_token",
+        // 接收消息的 Chat ID（可用 @userinfobot 查询）
+        "chat_id": "your_telegram_chat_id",
+
+        // 各类型消息的开关："on"=发送，"off"=不发送
+        "notification_settings": {
+            "status": "on",                     // 定时状态报告
+            "warning": "on",                    // 警告消息
+            "startup": "on",                    // 启动通知
+            "entry": "on",                      // 入场通知
+            "entry_fill": "on",                 // 入场成交通知
+            "exit": {
+                "roi": "off",                   // ROI 止盈离场
+                "emergency_exit": "off",        // 紧急离场
+                "force_exit": "off",            // 强制离场
+                "exit_signal": "off",           // 卖出信号离场
+                "trailing_stop_loss": "off",    // 移动止损离场
+                "stop_loss": "off",             // 固定止损离场
+                "stoploss_on_exchange": "off",  // 交易所止损单触发
+                "custom_exit": "off"            // 自定义退出
+            },
+            "exit_fill": "on",                  // 离场成交通知
+            "entry_cancel": "on",               // 入场取消通知
+            "exit_cancel": "on",                // 离场取消通知
+            "protection_trigger": "off",        // 风控触发（单币对）
+            "protection_trigger_global": "on",  // 风控触发（全局）
+            "show_candle": "off"                // 显示K线图
+        },
+
+        // 是否允许 Telegram /reload_config 命令重新加载配置
+        "reload": true,
+
+        // 低于此余额的资产不显示（BTC 单位）
+        "balance_dust_level": 0.01
+    },
+
+    // =================================================================
+    // 十五、Web API 服务器
+    // =================================================================
+
+    "api_server": {
+        // 是否启用内置 Web 服务器（提供 REST API 和 WebUI）
+        "enabled": false,
+
+        // 监听地址。127.0.0.1=仅本机访问，0.0.0.0=允许外部访问
+        "listen_ip_address": "127.0.0.1",
+        // 监听端口
+        "listen_port": 8080,
+
+        // 日志级别：error / info / debug
+        "verbosity": "error",
+
+        // 是否启用 OpenAPI/Swagger 文档页面
+        "enable_openapi": false,
+
+        // JWT 签名密钥。生产环境请替换为随机长字符串！
+        "jwt_secret_key": "somethingRandomSomethingRandom123",
+
+        // 允许跨域请求的域名列表。[] = 不允许跨域
+        "CORS_origins": [],
+
+        // 登录用户名
+        "username": "freqtrader",
+        // 登录密码（生产环境请改掉！）
+        "password": "SuperSecurePassword",
+
+        // WebSocket 连接认证 Token
+        "ws_token": "secret_ws_t0ken."
+    },
+
+    // =================================================================
+    // 十六、外部消息消费（多实例协作）
+    // =================================================================
+    // 用于从一个主 freqtrade 实例接收信号，本实例只负责执行
+
+    "external_message_consumer": {
+        "enabled": false,
+        // 生产者列表
+        "producers": [
+            {
+                "name": "default",
+                "host": "127.0.0.2",
+                "port": 8080,
+                "ws_token": "secret_ws_t0ken."
+            }
+        ],
+        // 等待消息的超时时间（秒）
+        "wait_timeout": 300,
+        // Ping 超时（秒）
+        "ping_timeout": 10,
+        // 无消息时的休眠时间（秒）
+        "sleep_time": 10,
+        // 是否移除原有的入场/离场信号（只使用外部信号）
+        "remove_entry_exit_signals": false,
+        // 消息大小限制（MB）
+        "message_size_limit": 8
+    },
+
+    // =================================================================
+    // 十七、数据库
+    // =================================================================
+
+    // 数据库连接字符串。默认使用 SQLite 本地文件
+    // PostgreSQL: "postgresql://user:pass@localhost:5432/freqtrade"
+    "db_url": "sqlite:///tradesv3.sqlite",
+
+    // =================================================================
+    // 十八、内部参数
+    // =================================================================
+
+    "internals": {
+        // 主循环间隔（秒）。每个循环检查一次市场、执行策略逻辑
+        // 值太小会增加 CPU 和 API 压力，太大会错过信号
+        "process_throttle_secs": 5,
+
+        // 心跳信号间隔（秒）。向 Telegram 发送定期在线状态
+        "heartbeat_interval": 60
+    },
+
+    // =================================================================
+    // 十九、策略加载
+    // =================================================================
+
+    // 默认使用的策略名称（对应 user_data/strategies/ 下的 Python 文件）
+    "strategy": "SampleStrategy",
+
+    // 策略文件搜索路径。默认 "user_data/strategies/"
+    "strategy_path": "user_data/strategies/",
+
+    // 是否递归搜索策略路径下的子目录
+    "recursive_strategy_search": false,
+
+    // =================================================================
+    // 二十、数据格式
+    // =================================================================
+
+    // 是否对 DataFrame 做内存压缩（减少内存占用，但增加 CPU 开销）
+    "reduce_df_footprint": false,
+
+    // OHLCV 数据的存储格式。feather=速度快（推荐），json=可读性好，parquet=跨平台
+    "dataformat_ohlcv": "feather",
+
+    // 交易数据的存储格式
+    "dataformat_trades": "feather",
+
+    // =================================================================
+    // 二十一、其他
+    // =================================================================
+
+    // 是否禁用 DataFrame 完整性检查。false=在发现问题时报错而不是静默修复
+    "disable_dataframe_checks": false,
+
+    // 额外加载的配置文件路径列表（会与主配置合并，后面的覆盖前面的）
+    "add_config_files": []
+}
