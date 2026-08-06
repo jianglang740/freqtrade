@@ -104,7 +104,7 @@ class RPCManager:
             self.send_msg(
                 {
                     "type": RPCMessageType.WARNING,
-                    "status": "Dry run is enabled. All trades are simulated.",
+                    "status": "模拟交易模式已启用。所有交易均为模拟，不会真实下单。",
                 }
             )
         stake_currency = config["stake_currency"]
@@ -117,24 +117,24 @@ class RPCManager:
         if config["exchange"].get("demo_trading"):
             exchange_name += " (demo trading)"
         strategy_name = config.get("strategy", "")
-        pos_adjust_enabled = "On" if config["position_adjustment_enable"] else "Off"
+        pos_adjust_enabled = "开启" if config["position_adjustment_enable"] else "关闭"
         self.send_msg(
             {
                 "type": RPCMessageType.STARTUP,
-                "status": f"*Exchange:* `{exchange_name}`\n"
-                f"*Stake per trade:* `{stake_amount} {stake_currency}`\n"
-                f"*Minimum ROI:* `{minimal_roi}`\n"
-                f"*{'Trailing ' if trailing_stop else ''}Stoploss:* `{stoploss}`\n"
-                f"*Position adjustment:* `{pos_adjust_enabled}`\n"
-                f"*Timeframe:* `{timeframe}`\n"
-                f"*Strategy:* `{strategy_name}`",
+                "status": f"*交易所:* `{exchange_name}`\n"
+                f"*每笔投入:* `{stake_amount} {stake_currency}`\n"
+                f"*最低 ROI:* `{minimal_roi}`\n"
+                f"*{'移动' if trailing_stop else ''}止损:* `{stoploss}`\n"
+                f"*仓位调整:* `{pos_adjust_enabled}`\n"
+                f"*时间周期:* `{timeframe}`\n"
+                f"*策略:* `{strategy_name}`",
             }
         )
         self.send_msg(
             {
                 "type": RPCMessageType.STARTUP,
-                "status": f"Searching for {stake_currency} pairs to buy and sell "
-                f"based on {pairlist.short_desc()}",
+                "status": f"正在搜索 {stake_currency} 交易对 "
+                f"基于 {pairlist.short_desc()}",
             }
         )
         if len(protections.name_list) > 0:

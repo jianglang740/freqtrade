@@ -417,10 +417,10 @@ class Telegram(RPCHandler):
         emoji = "\N{CHECK MARK}" if is_fill else "\N{LARGE BLUE CIRCLE}"
 
         terminology = {
-            "1_enter": "New Trade",
-            "1_entered": "New Trade filled",
-            "x_enter": "Increasing position",
-            "x_entered": "Position increase filled",
+            "1_enter": "成交中",               # 成交中
+            "1_entered": "已成交",         # 已成交
+            "x_enter": "加仓中",                       # 加仓
+            "x_entered": "加仓已成交",   # 加仓已成交
         }
 
         key = f"{'x' if msg['sub_trade'] else '1'}_{'entered' if is_fill else 'enter'}"
@@ -429,25 +429,25 @@ class Telegram(RPCHandler):
         message = (
             f"{emoji} *{self._exchange_from_msg(msg)}:*"
             f" {wording} (#{msg['trade_id']})\n"
-            f"*Pair:* `{msg['pair']}`\n"
+            f"*交易对:* `{msg['pair']}`\n"
         )
         message += self._add_analyzed_candle(msg["pair"])
-        message += f"*Enter Tag:* `{msg['enter_tag']}`\n" if msg.get("enter_tag") else ""
-        message += f"*Amount:* `{round_value(msg['amount'], 8)}`\n"
-        message += f"*Direction:* `{msg['direction']}"
+        message += f"*入场标签:* `{msg['enter_tag']}`\n" if msg.get("enter_tag") else ""
+        message += f"*数量:* `{round_value(msg['amount'], 8)}`\n"
+        message += f"*方向:* `{msg['direction']}"
         if msg.get("leverage") and msg.get("leverage", 1.0) != 1.0:
             message += f" ({msg['leverage']:.3g}x)"
         message += "`\n"
-        message += f"*Open Rate:* `{fmt_coin2(msg['open_rate'], msg['quote_currency'])}`\n"
+        message += f"*开仓价:* `{fmt_coin2(msg['open_rate'], msg['quote_currency'])}`\n"
         if msg["type"] == RPCMessageType.ENTRY and msg["current_rate"]:
             message += (
-                f"*Current Rate:* `{fmt_coin2(msg['current_rate'], msg['quote_currency'])}`\n"
+                f"*当前价:* `{fmt_coin2(msg['current_rate'], msg['quote_currency'])}`\n"
             )
 
         profit_fiat_extra = self.__format_profit_fiat(msg, "stake_amount")  # type: ignore
         total = fmt_coin(msg["stake_amount"], msg["quote_currency"])
 
-        message += f"*{'New ' if msg['sub_trade'] else ''}Total:* `{total}{profit_fiat_extra}`"
+        message += f"*{'新 ' if msg['sub_trade'] else ''}总额:* `{total}{profit_fiat_extra}`"
 
         return message
 
@@ -474,56 +474,56 @@ class Telegram(RPCHandler):
         is_sub_trade = msg.get("sub_trade")
         is_sub_profit = msg["profit_amount"] != msg.get("cumulative_profit")
         is_final_exit = msg.get("is_final_exit", False) and is_sub_profit
-        profit_prefix = "Sub " if is_sub_trade else ""
+        profit_prefix = "子" if is_sub_trade else ""
         cp_extra = ""
-        exit_wording = "Exited" if is_fill else "Exiting"
+        exit_wording = "已平仓" if is_fill else "平仓中"
         if is_sub_trade or is_final_exit:
             cp_fiat = self.__format_profit_fiat(msg, "cumulative_profit")
 
             if is_final_exit:
-                profit_prefix = "Sub "
+                profit_prefix = "子"
                 cp_extra = (
-                    f"*Final Profit:* `{format_pct(msg['final_profit_ratio'])} "
+                    f"*最终盈亏:* `{format_pct(msg['final_profit_ratio'])} "
                     f"({fmt_coin(msg['cumulative_profit'], msg['stake_currency'])}{cp_fiat})`\n"
                 )
             else:
-                exit_wording = f"Partially {exit_wording.lower()}"
+                exit_wording = f"部分{exit_wording}"
                 if msg["cumulative_profit"]:
                     cp_extra = (
-                        f"*Cumulative Profit:* `"
+                        f"*累计盈亏:* `"
                         f"{fmt_coin(msg['cumulative_profit'], msg['stake_currency'])}{cp_fiat}`\n"
                     )
-        enter_tag = f"*Enter Tag:* `{msg['enter_tag']}`\n" if msg.get("enter_tag") else ""
+        enter_tag = f"*入场标签:* `{msg['enter_tag']}`\n" if msg.get("enter_tag") else ""
         message = (
             f"{self._get_exit_emoji(msg)} *{self._exchange_from_msg(msg)}:* "
             f"{exit_wording} {msg['pair']} (#{msg['trade_id']})\n"
             f"{self._add_analyzed_candle(msg['pair'])}"
-            f"*{f'{profit_prefix}Profit' if is_fill else f'Unrealized {profit_prefix}Profit'}:* "
+            f"*{f'{profit_prefix}盈亏' if is_fill else f'未实现{profit_prefix}盈亏'}:* "
             f"`{format_pct(msg['profit_ratio'])}{profit_extra}`\n"
             f"{cp_extra}"
             f"{enter_tag}"
-            f"*Exit Reason:* `{msg['exit_reason']}`\n"
-            f"*Direction:* `{msg['direction']}"
+            f"*退出原因:* `{msg['exit_reason']}`\n"
+            f"*方向:* `{msg['direction']}"
             f"{leverage_text}`\n"
-            f"*Amount:* `{round_value(msg['amount'], 8)}`\n"
-            f"*Open Rate:* `{fmt_coin2(msg['open_rate'], msg['quote_currency'])}`\n"
+            f"*数量:* `{round_value(msg['amount'], 8)}`\n"
+            f"*开仓价:* `{fmt_coin2(msg['open_rate'], msg['quote_currency'])}`\n"
         )
         if msg["type"] == RPCMessageType.EXIT and msg["current_rate"]:
             message += (
-                f"*Current Rate:* `{fmt_coin2(msg['current_rate'], msg['quote_currency'])}`\n"
+                f"*当前价:* `{fmt_coin2(msg['current_rate'], msg['quote_currency'])}`\n"
             )
             if msg["order_rate"]:
-                message += f"*Exit Rate:* `{fmt_coin2(msg['order_rate'], msg['quote_currency'])}`"
+                message += f"*平仓价:* `{fmt_coin2(msg['order_rate'], msg['quote_currency'])}`"
         elif msg["type"] == RPCMessageType.EXIT_FILL:
-            message += f"*Exit Rate:* `{fmt_coin2(msg['close_rate'], msg['quote_currency'])}`"
+            message += f"*平仓价:* `{fmt_coin2(msg['close_rate'], msg['quote_currency'])}`"
 
         if is_sub_trade:
             stake_amount_fiat = self.__format_profit_fiat(msg, "stake_amount")
 
             rem = fmt_coin(msg["stake_amount"], msg["quote_currency"])
-            message += f"\n*Remaining:* `{rem}{stake_amount_fiat}`"
+            message += f"\n*剩余:* `{rem}{stake_amount_fiat}`"
         else:
-            message += f"\n*Duration:* `{duration} ({duration_min:.1f} min)`"
+            message += f"\n*持仓时长:* `{duration} ({duration_min:.1f} 分钟)`"
         return message
 
     def __format_profit_fiat(
@@ -550,34 +550,34 @@ class Telegram(RPCHandler):
         elif (
             msg["type"] == RPCMessageType.ENTRY_CANCEL or msg["type"] == RPCMessageType.EXIT_CANCEL
         ):
-            message_side = "enter" if msg["type"] == RPCMessageType.ENTRY_CANCEL else "exit"
+            message_side = "入场" if msg["type"] == RPCMessageType.ENTRY_CANCEL else "出场"
             message = (
                 f"\N{WARNING SIGN} *{self._exchange_from_msg(msg)}:* "
-                f"Cancelling {'partial ' if msg.get('sub_trade') else ''}"
-                f"{message_side} Order for {msg['pair']} "
-                f"(#{msg['trade_id']}). Reason: {msg['reason']}."
+                f"正在取消{'部分' if msg.get('sub_trade') else ''}"
+                f"{message_side}订单 {msg['pair']} "
+                f"(#{msg['trade_id']})。原因: {msg['reason']}。"
             )
 
         elif msg["type"] == RPCMessageType.PROTECTION_TRIGGER:
             message = (
-                f"*Protection* triggered due to {msg['reason']}. "
-                f"`{msg['pair']}` will be locked until `{msg['lock_end_time']}`."
+                f"*保护触发* 原因: {msg['reason']}。 "
+                f"`{msg['pair']}` 将锁定至 `{msg['lock_end_time']}`。"
             )
 
         elif msg["type"] == RPCMessageType.PROTECTION_TRIGGER_GLOBAL:
             message = (
-                f"*Protection* triggered due to {msg['reason']}. "
-                f"*All pairs* will be locked until `{msg['lock_end_time']}`."
+                f"*保护触发* 原因: {msg['reason']}。 "
+                f"*所有交易对* 将锁定至 `{msg['lock_end_time']}`。"
             )
 
         elif msg["type"] == RPCMessageType.STATUS:
-            message = f"*Status:* `{msg['status']}`"
+            message = f"*状态:* `{msg['status']}`"
 
         elif msg["type"] == RPCMessageType.WARNING:
-            message = f"\N{WARNING SIGN} *Warning:* `{msg['status']}`"
+            message = f"\N{WARNING SIGN} *警告:* `{msg['status']}`"
         elif msg["type"] == RPCMessageType.EXCEPTION:
             # Errors will contain exceptions, which are wrapped in triple ticks.
-            message = f"\N{WARNING SIGN} *ERROR:* \n {msg['status']}"
+            message = f"\N{WARNING SIGN} *错误:* \n {msg['status']}"
 
         elif msg["type"] == RPCMessageType.STARTUP:
             message = f"{msg['status']}"
@@ -656,7 +656,7 @@ class Telegram(RPCHandler):
             if order["is_open"] is True:
                 continue
             order_nr += 1
-            wording = "Entry" if order["ft_is_entry"] else "Exit"
+            wording = "入场" if order["ft_is_entry"] else "出场"
 
             cur_entry_amount = order["filled"] or order["amount"]
             cur_entry_average = order["safe_price"]
@@ -664,24 +664,24 @@ class Telegram(RPCHandler):
             lines.append(f"*{wording} #{order_nr}:*")
             if order_nr == 1:
                 lines.append(
-                    f"*Amount:* {round_value(cur_entry_amount, 8)} "
+                    f"*数量:* {round_value(cur_entry_amount, 8)} "
                     f"({fmt_coin(order['cost'], quote_currency)})"
                 )
-                lines.append(f"*Average Price:* {round_value(cur_entry_average, 8)}")
+                lines.append(f"*均价:* {round_value(cur_entry_average, 8)}")
             else:
                 # TODO: This calculation ignores fees.
                 price_to_1st_entry = (cur_entry_average - first_avg) / first_avg
                 if is_open:
                     lines.append(f"({dt_humanize_delta(order['order_filled_date'])})")
                 lines.append(
-                    f"*Amount:* {round_value(cur_entry_amount, 8)} "
+                    f"*数量:* {round_value(cur_entry_amount, 8)} "
                     f"({fmt_coin(order['cost'], quote_currency)})"
                 )
                 lines.append(
-                    f"*Average {wording} Price:* {round_value(cur_entry_average, 8)} "
-                    f"({format_pct(price_to_1st_entry)} from 1st entry rate)"
+                    f"*{wording}均价:* {round_value(cur_entry_average, 8)} "
+                    f"({format_pct(price_to_1st_entry)} 相对首次入场价)"
                 )
-                lines.append(f"*Order Filled:* {order['order_filled_date']}")
+                lines.append(f"*订单成交:* {order['order_filled_date']}")
 
             lines_detail.append("\n".join(lines))
 
@@ -768,40 +768,40 @@ class Telegram(RPCHandler):
             r["realized_profit_r"] = fmt_coin(r["realized_profit"], r["quote_currency"])
             r["total_profit_abs_r"] = fmt_coin(r["total_profit_abs"], r["quote_currency"])
             lines = [
-                f"*Trade ID:* `{r['trade_id']}`"
-                + (f" `(since {r['open_date_hum']})`" if r["is_open"] else ""),
-                f"*Current Pair:* {r['pair']}",
+                f"*交易 ID:* `{r['trade_id']}`"
+                + (f" `(距离开仓 {r['open_date_hum']})`" if r["is_open"] else ""),
+                f"*当前交易对:* {r['pair']}",
                 (
-                    f"*Direction:* {'`Short`' if r.get('is_short') else '`Long`'}"
+                    f"*方向:* {'`做空`' if r.get('is_short') else '`做多`'}"
                     + (f" ` ({r['leverage']}x)`" if r.get("leverage") else "")
                 ),
-                f"*Amount:* `{r['amount']} ({r['stake_amount_r']})`",
-                f"*Total invested:* `{r['max_stake_amount_r']}`" if position_adjust else "",
-                f"*Enter Tag:* `{r['enter_tag']}`" if r["enter_tag"] else "",
-                f"*Exit Reason:* `{r['exit_reason']}`" if r.get("exit_reason") else "",
+                f"*数量:* `{r['amount']} ({r['stake_amount_r']})`",
+                f"*总投入:* `{r['max_stake_amount_r']}`" if position_adjust else "",
+                f"*入场标签:* `{r['enter_tag']}`" if r["enter_tag"] else "",
+                f"*退出原因:* `{r['exit_reason']}`" if r.get("exit_reason") else "",
             ]
 
             if position_adjust:
                 max_buy_str = f"/{max_entries + 1}" if (max_entries > 0) else ""
                 lines.extend(
                     [
-                        f"*Number of Entries:* `{r['nr_of_successful_entries']}{max_buy_str}`",
-                        f"*Number of Exits:* `{r['nr_of_successful_exits']}`",
+                        f"*入场次数:* `{r['nr_of_successful_entries']}{max_buy_str}`",
+                        f"*出场次数:* `{r['nr_of_successful_exits']}`",
                     ]
                 )
 
             lines.extend(
                 [
-                    f"*Open Rate:* `{round_value(r['open_rate'], 8)}`",
-                    f"*Close Rate:* `{round_value(r['close_rate'], 8)}`" if r["close_rate"] else "",
-                    f"*Open Date:* `{r['open_date']}`",
-                    f"*Close Date:* `{r['close_date']}`" if r["close_date"] else "",
+                    f"*开仓价:* `{round_value(r['open_rate'], 8)}`",
+                    f"*平仓价:* `{round_value(r['close_rate'], 8)}`" if r["close_rate"] else "",
+                    f"*开仓时间:* `{r['open_date']}`",
+                    f"*平仓时间:* `{r['close_date']}`" if r["close_date"] else "",
                     (
-                        f" \n*Current Rate:* `{round_value(r['current_rate'], 8)}`"
+                        f" \n*当前价:* `{round_value(r['current_rate'], 8)}`"
                         if r["is_open"]
                         else ""
                     ),
-                    ("*Unrealized Profit:* " if r["is_open"] else "*Close Profit: *")
+                    ("*未实现盈亏:* " if r["is_open"] else "*已实现盈亏:* ")
                     + f"`{format_pct(r['profit_ratio'])}` `({r['profit_abs_r']})`",
                 ]
             )
@@ -812,12 +812,12 @@ class Telegram(RPCHandler):
                     and r.get("realized_profit_ratio") is not None
                 ):
                     lines.append(
-                        f"*Realized Profit:* `{format_pct(r['realized_profit_ratio'])} "
+                        f"*已实现盈亏:* `{format_pct(r['realized_profit_ratio'])} "
                         f"({r['realized_profit_r']})`"
                     )
                 if r.get("total_profit_ratio") is not None:
                     lines.append(
-                        f"*Total Profit:* `{format_pct(r['total_profit_ratio'])} "
+                        f"*总盈亏:* `{format_pct(r['total_profit_ratio'])} "
                         f"({r['total_profit_abs_r']})`"
                     )
 
@@ -825,7 +825,7 @@ class Telegram(RPCHandler):
                 lines.append(" ")
                 # Adding liquidation only if it is not None
                 if liquidation := r.get("liquidation_price"):
-                    lines.append(f"*Liquidation:* `{round_value(liquidation, 8)}`")
+                    lines.append(f"*强平价:* `{round_value(liquidation, 8)}`")
 
                 if (
                     r["stop_loss_abs"] != r["initial_stop_loss_abs"]
@@ -833,22 +833,22 @@ class Telegram(RPCHandler):
                 ):
                     # Adding initial stoploss only if it is different from stoploss
                     lines.append(
-                        f"*Initial Stoploss:* `{round_value(r['initial_stop_loss_abs'], 8)}` "
+                        f"*初始止损:* `{round_value(r['initial_stop_loss_abs'], 8)}` "
                         f"`({format_pct(r['initial_stop_loss_ratio'])})`"
                     )
 
                 # Adding stoploss and stoploss percentage only if it is not None
                 lines.append(
-                    f"*Stoploss:* `{round_value(r['stop_loss_abs'], 8)}` "
+                    f"*当前止损:* `{round_value(r['stop_loss_abs'], 8)}` "
                     + (f"`({format_pct(r['stop_loss_ratio'])})`" if r["stop_loss_ratio"] else "")
                 )
                 lines.append(
-                    f"*Stoploss distance:* `{round_value(r['stoploss_current_dist'], 8)}` "
+                    f"*止损距离:* `{round_value(r['stoploss_current_dist'], 8)}` "
                     f"`({format_pct(r['stoploss_current_dist_ratio'])})`"
                 )
                 if open_orders := r.get("open_orders"):
                     lines.append(
-                        f"*Open Order:* `{open_orders}`"
+                        f"*挂单:* `{open_orders}`"
                         + (f"- `{r['exit_order_status']}`" if r["exit_order_status"] else "")
                     )
 
@@ -866,7 +866,7 @@ class Telegram(RPCHandler):
                     msg += line + "\n"
                 else:
                     await self._send_msg(msg)
-                    msg = f"*Trade ID:* `{r['trade_id']}` - continued\n" + line + "\n"
+                    msg = f"*交易 ID:* `{r['trade_id']}` - 续\n" + line + "\n"
 
         await self._send_msg(msg)
 
@@ -899,11 +899,11 @@ class Telegram(RPCHandler):
             trades = statlist[i * max_trades_per_msg : (i + 1) * max_trades_per_msg]
             if show_total and i == messages_count - 1:
                 # append total line
-                trades.append(["Total", "", "", f"{fiat_profit_sum:.2f} {fiat_currency}"])
+                trades.append(["总计", "", "", f"{fiat_profit_sum:.2f} {fiat_currency}"])
                 if show_total_realized:
                     trades.append(
                         [
-                            "Total",
+                            "总计",
                             "(incl. realized Profits)",
                             "",
                             f"{fiat_total_profit_sum:.2f} {fiat_currency}",
@@ -934,11 +934,11 @@ class Telegram(RPCHandler):
         """
 
         vals = {
-            "days": TimeunitMappings("Day", "Daily", "days", "update_daily", 7, "%Y-%m-%d"),
+            "days": TimeunitMappings("日", "每日", "天", "update_daily", 7, "%Y-%m-%d"),
             "weeks": TimeunitMappings(
-                "Monday", "Weekly", "weeks (starting from Monday)", "update_weekly", 8, "%Y-%m-%d"
+                "周一", "每周", "周 (周一为起始)", "update_weekly", 8, "%Y-%m-%d"
             ),
-            "months": TimeunitMappings("Month", "Monthly", "months", "update_monthly", 6, "%Y-%m"),
+            "months": TimeunitMappings("月", "每月", "个月", "update_monthly", 6, "%Y-%m"),
         }
         val = vals[unit]
 
@@ -960,16 +960,16 @@ class Telegram(RPCHandler):
                 for period in stats["data"]
             ],
             headers=[
-                f"{val.header} (count)",
+                f"{val.header} (笔数)",
                 f"{stake_cur}",
                 f"{fiat_disp_cur}",
-                "Profit %",
-                "Trades",
+                "收益率 %",
+                "交易笔数",
             ],
             tablefmt="simple",
         )
         message = (
-            f"<b>{val.message} Profit over the last {timescale} {val.message2}</b>:\n"
+            f"<b>{val.message}收益 (过去 {timescale} {val.message2})</b>:\n"
             f"<pre>{stats_tab}</pre>"
         )
         await self._send_msg(
@@ -1054,11 +1054,11 @@ class Telegram(RPCHandler):
         # Direction-specific labels
         direction_label = f" {direction}" if direction else ""
         no_trades_msg = (
-            f"No{direction_label} trades yet.\n*Bot started:* `{stats['bot_start_date']}`"
+            f"暂无{direction_label}交易。\n*机器人启动时间:* `{stats['bot_start_date']}`"
         )
-        no_closed_msg = f"`No closed{direction_label} trade` \n"
-        closed_roi_label = f"*ROI:* Closed{direction_label} trades"
-        all_roi_label = f"*ROI:* All{direction_label} trades"
+        no_closed_msg = f"`暂无已关闭{direction_label}交易` \n"
+        closed_roi_label = f"*ROI:* 已关闭{direction_label}交易"
+        all_roi_label = f"*ROI:* 全部{direction_label}交易"
 
         if stats["trade_count"] == 0:
             return no_trades_msg
@@ -1087,32 +1087,32 @@ class Telegram(RPCHandler):
             f"({format_pct(profit_all_ratio_mean)}) "
             f"({profit_all_percent} \N{GREEK CAPITAL LETTER SIGMA}%)`\n"
             f"{fiat_all_trades}"
-            f"*Total Trade Count:* `{trade_count}`\n"
-            f"*Bot started:* `{stats['bot_start_date']}`\n"
-            f"*{'First Trade opened' if not timescale else 'Showing Profit since'}:* "
+            f"*总交易笔数:* `{trade_count}`\n"
+            f"*机器人启动:* `{stats['bot_start_date']}`\n"
+            f"*{'首笔交易' if not timescale else '显示收益自'}:* "
             f"`{first_trade_date}`\n"
-            f"*Latest Trade opened:* `{latest_trade_date}`\n"
-            f"*Win / Loss:* `{stats['winning_trades']} / {stats['losing_trades']}`\n"
-            f"*Winrate:* `{format_pct(winrate)}`\n"
-            f"*Expectancy (Ratio):* `{expectancy:.2f} ({expectancy_ratio:.2f})`"
+            f"*最近交易:* `{latest_trade_date}`\n"
+            f"*盈利 / 亏损:* `{stats['winning_trades']} / {stats['losing_trades']}`\n"
+            f"*胜率:* `{format_pct(winrate)}`\n"
+            f"*期望值 (比率):* `{expectancy:.2f} ({expectancy_ratio:.2f})`"
         )
 
         if stats["closed_trade_count"] > 0:
             markdown_msg += (
-                f"\n*Avg. Duration:* `{avg_duration}`\n"
-                f"*Best Performing:* `{best_pair}: {best_pair_profit_abs} "
+                f"\n*平均持仓时长:* `{avg_duration}`\n"
+                f"*最佳表现:* `{best_pair}: {best_pair_profit_abs} "
                 f"({format_pct(best_pair_profit_ratio)})`\n"
-                f"*Trading volume:* `{fmt_coin(stats['trading_volume'], stake_cur)}`\n"
-                f"*Profit factor:* `{stats['profit_factor']:.2f}`\n"
-                f"*Max Drawdown:* `{format_pct(stats['max_drawdown'])} "
+                f"*交易量:* `{fmt_coin(stats['trading_volume'], stake_cur)}`\n"
+                f"*盈利因子:* `{stats['profit_factor']:.2f}`\n"
+                f"*最大回撤:* `{format_pct(stats['max_drawdown'])} "
                 f"({fmt_coin(stats['max_drawdown_abs'], stake_cur)})`\n"
-                f"    from `{stats['max_drawdown_start']} "
+                f"    从 `{stats['max_drawdown_start']} "
                 f"({fmt_coin(stats['drawdown_high'], stake_cur)})`\n"
-                f"    to `{stats['max_drawdown_end']} "
+                f"    到 `{stats['max_drawdown_end']} "
                 f"({fmt_coin(stats['drawdown_low'], stake_cur)})`\n"
-                f"*Current Drawdown:* `{format_pct(stats['current_drawdown'])} "
+                f"*当前回撤:* `{format_pct(stats['current_drawdown'])} "
                 f"({fmt_coin(stats['current_drawdown_abs'], stake_cur)})`\n"
-                f"    from `{stats['current_drawdown_start']} "
+                f"    从 `{stats['current_drawdown_start']} "
                 f"({fmt_coin(stats['current_drawdown_high'], stake_cur)})`\n"
             )
 
@@ -1207,21 +1207,21 @@ class Telegram(RPCHandler):
         stats = self._rpc._rpc_stats()
 
         reason_map = {
-            "roi": "ROI",
-            "stop_loss": "Stoploss",
-            "trailing_stop_loss": "Trail. Stop",
-            "stoploss_on_exchange": "Stoploss",
-            "exit_signal": "Exit Signal",
-            "force_exit": "Force Exit",
-            "emergency_exit": "Emergency Exit",
+            "roi": "ROI止盈",
+            "stop_loss": "止损",
+            "trailing_stop_loss": "移动止损",
+            "stoploss_on_exchange": "交易所止损",
+            "exit_signal": "卖出信号",
+            "force_exit": "强制平仓",
+            "emergency_exit": "紧急平仓",
         }
         exit_reasons_tabulate = [
             [reason_map.get(reason, reason), sum(count.values()), count["wins"], count["losses"]]
             for reason, count in stats["exit_reasons"].items()
         ]
-        exit_reasons_msg = "No trades yet."
+        exit_reasons_msg = "暂无交易。"
         for reason in chunks(exit_reasons_tabulate, 25):
-            exit_reasons_msg = tabulate(reason, headers=["Exit Reason", "Exits", "Wins", "Losses"])
+            exit_reasons_msg = tabulate(reason, headers=["退出原因", "次数", "赢", "输"])
             if len(exit_reasons_tabulate) > 25:
                 await self._send_msg(f"```\n{exit_reasons_msg}```", ParseMode.MARKDOWN)
                 exit_reasons_msg = ""
@@ -1230,7 +1230,7 @@ class Telegram(RPCHandler):
         duration_msg = tabulate(
             [
                 [
-                    "Wins",
+                    "盈利",
                     (
                         str(timedelta(seconds=durations["wins"]))
                         if durations["wins"] is not None
@@ -1238,7 +1238,7 @@ class Telegram(RPCHandler):
                     ),
                 ],
                 [
-                    "Losses",
+                    "亏损",
                     (
                         str(timedelta(seconds=durations["losses"]))
                         if durations["losses"] is not None
@@ -1246,7 +1246,7 @@ class Telegram(RPCHandler):
                     ),
                 ],
             ],
-            headers=["", "Avg. Duration"],
+            headers=["", "平均持仓时长"],
         )
         msg = f"""```\n{exit_reasons_msg}```\n```\n{duration_msg}```"""
 
@@ -1266,9 +1266,9 @@ class Telegram(RPCHandler):
 
         output = ""
         if self._config["dry_run"]:
-            output += "*Warning:* Simulated balances in Dry Mode.\n"
+            output += "*注意:* 当前为模拟交易，余额为模拟数据。\n"
         starting_cap = fmt_coin(result["starting_capital"], self._config["stake_currency"])
-        output += f"Starting capital: `{starting_cap}`"
+        output += f"初始资金: `{starting_cap}`"
         starting_cap_fiat = (
             fmt_coin(result["starting_capital_fiat"], self._config["fiat_display_currency"])
             if result["starting_capital_fiat"] > 0
@@ -1317,10 +1317,10 @@ class Telegram(RPCHandler):
 
         if total_dust_balance > 0:
             output += (
-                f"*{total_dust_currencies} Other "
-                f"{plural(total_dust_currencies, 'Currency', 'Currencies')} "
+                f"*{total_dust_currencies} 个其他"
+                f"{plural(total_dust_currencies, '币种', '币种')} "
                 f"(< {balance_dust_level} {result['stake']}):*\n"
-                f"\t`Est. {result['stake']}: "
+                f"\t`预估 {result['stake']}: "
                 f"{fmt_coin(total_dust_balance, result['stake'], False)}`\n"
             )
         tc = result["trade_count"] > 0
@@ -1334,7 +1334,7 @@ class Telegram(RPCHandler):
             f"\t`{result['symbol']}: {value}`{fiat_val}\n" if result["symbol"] else ""
         )
         output += (
-            f"\n*Estimated Value{' (Bot managed assets only)' if not full_result else ''}*:\n"
+            f"\n*预估价值{' (仅机器人管理资产)' if not full_result else ''}*:\n"
             f"\t`{result['stake']}: {total_stake}`{stake_improve}\n"
             f"{fiat_estimated_value}"
         )
@@ -1352,7 +1352,7 @@ class Telegram(RPCHandler):
         :return: None
         """
         msg = self._rpc._rpc_start()
-        await self._send_msg(f"Status: `{msg['status']}`")
+        await self._send_msg(f"状态: `{msg['status']}`")
 
     @authorized_only
     async def _stop(self, update: Update, context: CallbackContext) -> None:
@@ -1364,7 +1364,7 @@ class Telegram(RPCHandler):
         :return: None
         """
         msg = self._rpc._rpc_stop()
-        await self._send_msg(f"Status: `{msg['status']}`")
+        await self._send_msg(f"状态: `{msg['status']}`")
 
     @authorized_only
     async def _reload_config(self, update: Update, context: CallbackContext) -> None:
@@ -1376,7 +1376,7 @@ class Telegram(RPCHandler):
         :return: None
         """
         msg = self._rpc._rpc_reload_config()
-        await self._send_msg(f"Status: `{msg['status']}`")
+        await self._send_msg(f"状态: `{msg['status']}`")
 
     @authorized_only
     async def _pause(self, update: Update, context: CallbackContext) -> None:
@@ -1388,7 +1388,7 @@ class Telegram(RPCHandler):
         :return: None
         """
         msg = self._rpc._rpc_pause()
-        await self._send_msg(f"Status: `{msg['status']}`")
+        await self._send_msg(f"状态: `{msg['status']}`")
 
     @authorized_only
     async def _reload_trade_from_exchange(self, update: Update, context: CallbackContext) -> None:
@@ -1396,10 +1396,10 @@ class Telegram(RPCHandler):
         Handler for /reload_trade <tradeid>.
         """
         if not context.args or len(context.args) == 0:
-            raise RPCException("Trade-id not set.")
+            raise RPCException("未设置交易ID。")
         trade_id = int(context.args[0])
         msg = self._rpc._rpc_reload_trade_from_exchange(trade_id)
-        await self._send_msg(f"Status: `{msg['status']}`")
+        await self._send_msg(f"状态: `{msg['status']}`")
 
     @authorized_only
     async def _force_exit(self, update: Update, context: CallbackContext) -> None:
@@ -1421,7 +1421,7 @@ class Telegram(RPCHandler):
                     self._config["stake_currency"], fiat_currency
                 )
             except RPCException:
-                await self._send_msg(msg="No open trade found.")
+                await self._send_msg(msg="没有找到未平仓交易。")
                 return
             trades = []
             for trade in statlist:
@@ -1434,9 +1434,9 @@ class Telegram(RPCHandler):
             buttons_aligned = self._layout_inline_keyboard(trade_buttons, cols=1)
 
             buttons_aligned.append(
-                [InlineKeyboardButton(text="Cancel", callback_data="force_exit__cancel")]
+                [InlineKeyboardButton(text="取消", callback_data="force_exit__cancel")]
             )
-            await self._send_msg(msg="Which trade?", keyboard=buttons_aligned)
+            await self._send_msg(msg="选择要退出的交易:", keyboard=buttons_aligned)
 
     async def _force_exit_action(self, trade_id: str):
         if trade_id != "cancel":
@@ -1455,7 +1455,7 @@ class Telegram(RPCHandler):
                 trade_id = query.data.split("__")[1].split(" ")[0]
                 if trade_id == "cancel":
                     await query.answer()
-                    await query.edit_message_text(text="Force exit canceled.")
+                    await query.edit_message_text(text="强制平仓已取消。")
                     return
                 trade: Trade | None = (
                     Trade.get_trades(trade_filter=Trade.id == int(trade_id)).first()
@@ -1465,11 +1465,11 @@ class Telegram(RPCHandler):
                 await query.answer()
                 if trade:
                     await query.edit_message_text(
-                        text=f"Manually exiting Trade #{trade_id}, {trade.pair}"
+                        text=f"正在手动平仓 #{trade_id}, {trade.pair}"
                     )
                     await self._force_exit_action(trade_id)
                 else:
-                    await query.edit_message_text(text=f"Trade {trade_id} not found.")
+                    await query.edit_message_text(text=f"交易 {trade_id} 未找到。")
 
     async def _force_enter_action(self, pair, price: float | None, order_side: SignalDirection):
         if pair != "cancel":
@@ -1483,7 +1483,7 @@ class Telegram(RPCHandler):
                 # Workaround to avoid nested loops
                 await loop.run_in_executor(None, _force_enter)
             except RPCException as e:
-                logger.exception("Forcebuy error!")
+                logger.exception("强制买入出错!")
                 await self._send_msg(str(e), ParseMode.HTML)
 
     async def _force_enter_inline(self, update: Update, _: CallbackContext) -> None:
@@ -1494,13 +1494,13 @@ class Telegram(RPCHandler):
                 payload = query.data.split("__")[1]
                 if payload == "cancel":
                     await query.answer()
-                    await query.edit_message_text(text="Force enter canceled.")
+                    await query.edit_message_text(text="强制入场已取消。")
                     return
                 if payload and "_||_" in payload:
                     pair, side = payload.split("_||_")
                     order_side = SignalDirection(side)
                     await query.answer()
-                    await query.edit_message_text(text=f"Manually entering {order_side} for {pair}")
+                    await query.edit_message_text(text=f"正在手动{order_side}入场 {pair}")
                     await self._force_enter_action(pair, None, order_side)
 
     @staticmethod
@@ -1535,10 +1535,10 @@ class Telegram(RPCHandler):
             buttons_aligned = self._layout_inline_keyboard(pair_buttons)
 
             buttons_aligned.append(
-                [InlineKeyboardButton(text="Cancel", callback_data="force_enter__cancel")]
+                [InlineKeyboardButton(text="取消", callback_data="force_enter__cancel")]
             )
             await self._send_msg(
-                msg="Which pair?", keyboard=buttons_aligned, query=update.callback_query
+                msg="选择交易对:", keyboard=buttons_aligned, query=update.callback_query
             )
 
     @authorized_only
@@ -1570,13 +1570,13 @@ class Telegram(RPCHandler):
                 for trade in trades["trades"]
             ],
             headers=[
-                "Close Date",
-                "Pair (ID L/S)" if nonspot else "Pair (ID)",
-                f"Profit ({stake_cur})",
+                "平仓时间",
+                "交易对 (ID L/S)" if nonspot else "交易对 (ID)",
+                f"盈亏 ({stake_cur})",
             ],
             tablefmt="simple",
         )
-        message = f"<b>{min(trades['trades_count'], nrecent)} recent trades</b>:\n" + (
+        message = f"<b>最近 {min(trades['trades_count'], nrecent)} 笔交易</b>:\n" + (
             f"<pre>{trades_tab}</pre>" if trades["trades_count"] > 0 else ""
         )
         await self._send_msg(message, parse_mode=ParseMode.HTML)
@@ -1591,12 +1591,12 @@ class Telegram(RPCHandler):
         :return: None
         """
         if not context.args or len(context.args) == 0:
-            raise RPCException("Trade-id not set.")
+            raise RPCException("未设置交易ID。")
         trade_id = int(context.args[0])
         msg = self._rpc._rpc_delete(trade_id)
         await self._send_msg(
             f"{msg['result_msg']}\n"
-            "Please make sure to take care of this asset on the exchange manually."
+            "请确保在交易所手动处理该资产。"
         )
 
     @authorized_only
@@ -1609,10 +1609,10 @@ class Telegram(RPCHandler):
         :return: None
         """
         if not context.args or len(context.args) == 0:
-            raise RPCException("Trade-id not set.")
+            raise RPCException("未设置交易ID。")
         trade_id = int(context.args[0])
         self._rpc._rpc_cancel_open_order(trade_id)
-        await self._send_msg("Open order canceled.")
+        await self._send_msg("挂单已取消。")
 
     @authorized_only
     async def _performance(self, update: Update, context: CallbackContext) -> None:
@@ -1624,7 +1624,7 @@ class Telegram(RPCHandler):
         :return: None
         """
         trades = self._rpc._rpc_performance()
-        output = "<b>Performance:</b>\n"
+        output = "<b>表现统计:</b>\n"
         for i, trade in enumerate(trades):
             stat_line = (
                 f"{i + 1}.\t <code>{trade['pair']}\t"
@@ -1661,7 +1661,7 @@ class Telegram(RPCHandler):
             pair = context.args[0]
 
         trades = self._rpc._rpc_enter_tag_performance(pair)
-        output = "*Entry Tag Performance:*\n"
+        output = "*入场标签表现:*\n"
         for i, trade in enumerate(trades):
             stat_line = (
                 f"{i + 1}.\t `{trade['enter_tag']}\t"
@@ -1698,7 +1698,7 @@ class Telegram(RPCHandler):
             pair = context.args[0]
 
         trades = self._rpc._rpc_exit_reason_performance(pair)
-        output = "*Exit Reason Performance:*\n"
+        output = "*退出原因表现:*\n"
         for i, trade in enumerate(trades):
             stat_line = (
                 f"{i + 1}.\t `{trade['exit_reason']}\t"
@@ -1735,7 +1735,7 @@ class Telegram(RPCHandler):
             pair = context.args[0]
 
         trades = self._rpc._rpc_mix_tag_performance(pair)
-        output = "*Mix Tag Performance:*\n"
+        output = "*混合标签表现:*\n"
         for i, trade in enumerate(trades):
             stat_line = (
                 f"{i + 1}.\t `{trade['mix_tag']}\t"
@@ -1791,7 +1791,7 @@ class Telegram(RPCHandler):
         """
         rpc_locks = self._rpc._rpc_locks()
         if not rpc_locks["locks"]:
-            await self._send_msg("No active locks.", parse_mode=ParseMode.HTML)
+            await self._send_msg("没有活跃的锁定。", parse_mode=ParseMode.HTML)
 
         for locks in chunks(rpc_locks["locks"], 25):
             message = tabulate(
@@ -1838,7 +1838,7 @@ class Telegram(RPCHandler):
             if "baseonly" in context.args:
                 whitelist["whitelist"] = [pair.split("/")[0] for pair in whitelist["whitelist"]]
 
-        message = f"Using whitelist `{whitelist['method']}` with {whitelist['length']} pairs\n"
+        message = f"使用白名单 `{whitelist['method']}`，共 {whitelist['length']} 个交易对\n"
         message += f"`{', '.join(whitelist['whitelist'])}`"
 
         logger.debug(message)
@@ -1859,7 +1859,7 @@ class Telegram(RPCHandler):
         if errmsgs:
             await self._send_msg("\n".join(errmsgs))
 
-        message = f"Blacklist contains {blacklist['length']} pairs\n"
+        message = f"黑名单包含 {blacklist['length']} 个交易对\n"
         message += f"`{', '.join(blacklist['blacklist'])}`"
 
         logger.debug(message)
@@ -1914,80 +1914,61 @@ class Telegram(RPCHandler):
         :return: None
         """
         force_enter_text = (
-            "*/forcelong <pair> [<rate>]:* `Instantly buys the given pair. "
-            "Optionally takes a rate at which to buy "
-            "(only applies to limit orders).` \n"
+            "*/forcelong <pair> [<rate>]:* `立即买入指定交易对，可选指定价格` \n"
         )
         if self._rpc._freqtrade.trading_mode != TradingMode.SPOT:
             force_enter_text += (
-                "*/forceshort <pair> [<rate>]:* `Instantly shorts the given pair. "
-                "Optionally takes a rate at which to sell "
-                "(only applies to limit orders).` \n"
+                "*/forceshort <pair> [<rate>]:* `立即做空指定交易对，可选指定价格` \n"
             )
         message = (
-            "_Bot Control_\n"
+            "_机器人控制_\n"
             "------------\n"
-            "*/start:* `Starts the trader`\n"
-            "*/pause:* `Pause the new entries for trader, but handles open trades gracefully`\n"
-            "*/stop:* `Stops the trader`\n"
-            "*/stopentry:* `Stops entering, but handles open trades gracefully` \n"
-            "*/forceexit <trade_id>|all:* `Instantly exits the given trade or all trades, "
-            "regardless of profit`\n"
-            "*/fx <trade_id>|all:* `Alias to /forceexit`\n"
+            "*/start:* `启动交易`\n"
+            "*/pause:* `暂停新开仓，但继续管理现有持仓`\n"
+            "*/stop:* `停止交易`\n"
+            "*/stopentry:* `停止新开仓，但继续管理现有持仓` \n"
+            "*/forceexit <trade_id>|all:* `强制平仓指定交易或全部交易，无论盈亏`\n"
+            "*/fx <trade_id>|all:* `/forceexit 的别名`\n"
             f"{force_enter_text if self._config.get('force_entry_enable', False) else ''}"
-            "*/delete <trade_id>:* `Instantly delete the given trade in the database`\n"
-            "*/reload_trade <trade_id>:* `Reload trade from exchange Orders`\n"
-            "*/cancel_open_order <trade_id>:* `Cancels open orders for trade. "
-            "Only valid when the trade has open orders.`\n"
-            "*/coo <trade_id>|all:* `Alias to /cancel_open_order`\n"
-            "*/whitelist [sorted] [baseonly]:* `Show current whitelist. Optionally in "
-            "order and/or only displaying the base currency of each pairing.`\n"
-            "*/blacklist [pair]:* `Show current blacklist, or adds one or more pairs "
-            "to the blacklist.` \n"
-            "*/blacklist_delete [pairs]| /bl_delete [pairs]:* "
-            "`Delete pair / pattern from blacklist. Will reset on reload_conf.` \n"
-            "*/reload_config:* `Reload configuration file` \n"
-            "*/unlock <pair|id>:* `Unlock this Pair (or this lock id if it's numeric)`\n"
-            "_Current state_\n"
+            "*/delete <trade_id>:* `从数据库中删除指定交易`\n"
+            "*/reload_trade <trade_id>:* `从交易所重新加载交易订单`\n"
+            "*/cancel_open_order <trade_id>:* `取消交易的挂单`\n"
+            "*/coo <trade_id>|all:* `/cancel_open_order 的别名`\n"
+            "*/whitelist [sorted] [baseonly]:* `显示当前白名单，可选排序或仅显示基础货币`\n"
+            "*/blacklist [pair]:* `显示当前黑名单，或添加交易对到黑名单` \n"
+            "*/blacklist_delete [pairs]| /bl_delete [pairs]:* `从黑名单删除交易对` \n"
+            "*/reload_config:* `重新加载配置文件` \n"
+            "*/unlock <pair|id>:* `解锁指定交易对或锁定ID`\n"
+            "_当前状态_\n"
             "------------\n"
-            "*/show_config:* `Show running configuration` \n"
-            "*/locks:* `Show currently locked pairs`\n"
-            "*/balance:* `Show bot managed balance per currency`\n"
-            "*/balance full:* `Show account balance per currency`\n"
-            "*/logs [limit]:* `Show latest logs - defaults to 10` \n"
-            "*/count:* `Show number of active trades compared to allowed number of trades`\n"
-            "*/health* `Show latest process timestamp - defaults to 1970-01-01 00:00:00` \n"
-            "*/marketdir [long | short | even | none]:* `Updates the user managed variable "
-            "that represents the current market direction. If no direction is provided `"
-            "`the currently set market direction will be output.` \n"
-            "*/list_custom_data <trade_id> <key>:* `List custom_data for Trade ID & Key combo.`\n"
-            "`If no Key is supplied it will list all key-value pairs found for that Trade ID.`\n"
-            "_Statistics_\n"
+            "*/show_config:* `显示运行配置` \n"
+            "*/locks:* `显示当前锁定的交易对`\n"
+            "*/balance:* `显示机器人管理的各币种余额`\n"
+            "*/balance full:* `显示账户各币种余额`\n"
+            "*/logs [limit]:* `显示最近日志，默认10条` \n"
+            "*/count:* `显示活跃交易数与允许的最大交易数`\n"
+            "*/health* `显示最近进程时间戳` \n"
+            "*/marketdir [long | short | even | none]:* `更新当前市场方向变量` \n"
+            "*/list_custom_data <trade_id> <key>:* `列出指定交易的自定义数据`\n"
+            "_统计_\n"
             "------------\n"
-            "*/status <trade_id>|[table]:* `Lists all open trades`\n"
-            "         *<trade_id> :* `Lists one or more specific trades.`\n"
-            "                        `Separate multiple <trade_id> with a blank space.`\n"
-            "         *table :* `will display trades in a table`\n"
-            "                `pending buy orders are marked with an asterisk (*)`\n"
-            "                `pending sell orders are marked with a double asterisk (**)`\n"
-            "*/entries <pair|none>:* `Shows the enter_tag performance`\n"
-            "*/exits <pair|none>:* `Shows the exit reason performance`\n"
-            "*/mix_tags <pair|none>:* `Shows combined entry tag + exit reason performance`\n"
-            "*/trades [limit]:* `Lists last closed trades (limited to 10 by default)`\n"
-            "*/profit [<n>]:* `Lists cumulative profit from all finished trades, "
-            "over the last n days`\n"
-            "*/profit_long [<n>]:* `Lists cumulative profit from all finished long trades, "
-            "over the last n days`\n"
-            "*/profit_short [<n>]:* `Lists cumulative profit from all finished short trades, "
-            "over the last n days`\n"
-            "*/performance:* `Show performance of each finished trade grouped by pair`\n"
-            "*/daily <n>:* `Shows profit or loss per day, over the last n days`\n"
-            "*/weekly <n>:* `Shows statistics per week, over the last n weeks`\n"
-            "*/monthly <n>:* `Shows statistics per month, over the last n months`\n"
-            "*/stats:* `Shows Wins / losses by Sell reason as well as "
-            "Avg. holding durations for buys and sells.`\n"
-            "*/help:* `This help message`\n"
-            "*/version:* `Show version`\n"
+            "*/status <trade_id>|[table]:* `列出所有持仓`\n"
+            "         *<trade_id> :* `列出指定交易`\n"
+            "         *table :* `以表格形式显示`\n"
+            "*/entries <pair|none>:* `显示入场标签表现`\n"
+            "*/exits <pair|none>:* `显示出场原因表现`\n"
+            "*/mix_tags <pair|none>:* `显示混合标签表现`\n"
+            "*/trades [limit]:* `列出最近已平仓交易，默认10笔`\n"
+            "*/profit [<n>]:* `显示最近n天累计盈亏`\n"
+            "*/profit_long [<n>]:* `显示最近n天多头累计盈亏`\n"
+            "*/profit_short [<n>]:* `显示最近n天空头累计盈亏`\n"
+            "*/performance:* `按交易对显示已平仓交易表现`\n"
+            "*/daily <n>:* `显示最近n天每日盈亏`\n"
+            "*/weekly <n>:* `显示最近n周每周统计`\n"
+            "*/monthly <n>:* `显示最近n月每月统计`\n"
+            "*/stats:* `按卖出原因显示胜率及平均持仓时长`\n"
+            "*/help:* `显示此帮助信息`\n"
+            "*/version:* `显示版本`\n"
         )
 
         await self._send_msg(message, parse_mode=ParseMode.MARKDOWN)
@@ -1999,9 +1980,9 @@ class Telegram(RPCHandler):
         Shows the last process timestamp
         """
         health = self._rpc.health()
-        message = f"Last process: `{health['last_process_loc']}`\n"
-        message += f"Initial bot start: `{health['bot_start_loc']}`\n"
-        message += f"Last bot restart: `{health['bot_startup_loc']}`"
+        message = f"最近进程: `{health['last_process_loc']}`\n"
+        message += f"初始启动: `{health['bot_start_loc']}`\n"
+        message += f"最近重启: `{health['bot_startup_loc']}`"
         await self._send_msg(message)
 
     @authorized_only
@@ -2014,9 +1995,9 @@ class Telegram(RPCHandler):
         :return: None
         """
         strategy_version = self._rpc._freqtrade.strategy.version()
-        version_string = f"*Version:* `{__version__}`"
+        version_string = f"*版本:* `{__version__}`"
         if strategy_version is not None:
-            version_string += f"\n*Strategy version: * `{strategy_version}`"
+            version_string += f"\n*策略版本:* `{strategy_version}`"
 
         await self._send_msg(version_string)
 
@@ -2033,37 +2014,37 @@ class Telegram(RPCHandler):
 
         if val["trailing_stop"]:
             sl_info = (
-                f"*Initial Stoploss:* `{val['stoploss']}`\n"
-                f"*Trailing stop positive:* `{val['trailing_stop_positive']}`\n"
-                f"*Trailing stop offset:* `{val['trailing_stop_positive_offset']}`\n"
-                f"*Only trail above offset:* `{val['trailing_only_offset_is_reached']}`\n"
+                f"*初始止损:* `{val['stoploss']}`\n"
+                f"*移动止损触发:* `{val['trailing_stop_positive']}`\n"
+                f"*移动止损偏移:* `{val['trailing_stop_positive_offset']}`\n"
+                f"*仅偏移后启动:* `{val['trailing_only_offset_is_reached']}`\n"
             )
 
         else:
-            sl_info = f"*Stoploss:* `{val['stoploss']}`\n"
+            sl_info = f"*止损:* `{val['stoploss']}`\n"
 
         if val["position_adjustment_enable"]:
             pa_info = (
-                f"*Position adjustment:* On\n"
-                f"*Max enter position adjustment:* `{val['max_entry_position_adjustment']}`\n"
+                f"*仓位调整:* 开启\n"
+                f"*最大加仓次数:* `{val['max_entry_position_adjustment']}`\n"
             )
         else:
-            pa_info = "*Position adjustment:* Off\n"
+            pa_info = "*仓位调整:* 关闭\n"
 
         await self._send_msg(
-            f"*Mode:* `{'Dry-run' if val['dry_run'] else 'Live'}`\n"
-            f"*Exchange:* `{val['exchange']}{' (Demo)' if val['demo_trading'] else ''}`\n"
-            f"*Market: * `{val['trading_mode']}`\n"
-            f"*Stake per trade:* `{val['stake_amount']} {val['stake_currency']}`\n"
-            f"*Max open Trades:* `{val['max_open_trades']}`\n"
-            f"*Minimum ROI:* `{val['minimal_roi']}`\n"
-            f"*Entry strategy:* ```\n{json.dumps(val['entry_pricing'])}```\n"
-            f"*Exit strategy:* ```\n{json.dumps(val['exit_pricing'])}```\n"
+            f"*模式:* `{'模拟' if val['dry_run'] else '实盘'}`\n"
+            f"*交易所:* `{val['exchange']}{' (Demo)' if val['demo_trading'] else ''}`\n"
+            f"*市场:* `{val['trading_mode']}`\n"
+            f"*每笔投入:* `{val['stake_amount']} {val['stake_currency']}`\n"
+            f"*最大持仓:* `{val['max_open_trades']}`\n"
+            f"*最低 ROI:* `{val['minimal_roi']}`\n"
+            f"*入场策略:* ```\n{json.dumps(val['entry_pricing'])}```\n"
+            f"*出场策略:* ```\n{json.dumps(val['exit_pricing'])}```\n"
             f"{sl_info}"
             f"{pa_info}"
-            f"*Timeframe:* `{val['timeframe']}`\n"
-            f"*Strategy:* `{val['strategy']}`\n"
-            f"*Current state:* `{val['state']}`"
+            f"*时间周期:* `{val['timeframe']}`\n"
+            f"*策略:* `{val['strategy']}`\n"
+            f"*当前状态:* `{val['state']}`"
         )
 
     @authorized_only
@@ -2077,7 +2058,7 @@ class Telegram(RPCHandler):
         """
         try:
             if not context.args or len(context.args) == 0:
-                raise RPCException("Trade-id not set.")
+                raise RPCException("未设置交易ID。")
             trade_id = int(context.args[0])
             key = None if len(context.args) < 2 else str(context.args[1])
 
@@ -2086,15 +2067,15 @@ class Telegram(RPCHandler):
             if len(results) > 0:
                 trade_custom_data = results[0]["custom_data"]
                 messages.append(
-                    "Found custom-data entr" + ("ies: " if len(trade_custom_data) > 1 else "y: ")
+                    "找到自定义数据条" + ("目: " if len(trade_custom_data) > 1 else "目: ")
                 )
                 for custom_data in trade_custom_data:
                     lines = [
-                        f"*Key:* `{custom_data['key']}`",
-                        f"*Type:* `{custom_data['type']}`",
-                        f"*Value:* `{custom_data['value']}`",
-                        f"*Create Date:* `{format_date(custom_data['created_at'])}`",
-                        f"*Update Date:* `{format_date(custom_data['updated_at'])}`",
+                        f"*键:* `{custom_data['key']}`",
+                        f"*类型:* `{custom_data['type']}`",
+                        f"*值:* `{custom_data['value']}`",
+                        f"*创建时间:* `{format_date(custom_data['created_at'])}`",
+                        f"*更新时间:* `{format_date(custom_data['updated_at'])}`",
                     ]
                     # Filter empty lines using list-comprehension
                     messages.append("\n".join([line for line in lines if line]))
@@ -2105,8 +2086,8 @@ class Telegram(RPCHandler):
                         logger.warning(msg)
                     await self._send_msg(msg)
             else:
-                message = f"Didn't find any custom-data entries for Trade ID: `{trade_id}`"
-                message += f" and Key: `{key}`." if key is not None else ""
+                message = f"未找到交易 ID `{trade_id}` 的自定义数据"
+                message += f" 及键: `{key}`。" if key is not None else "。"
                 await self._send_msg(message)
 
         except RPCException as e:
@@ -2123,12 +2104,12 @@ class Telegram(RPCHandler):
         if reload_able:
             reply_markup = InlineKeyboardMarkup(
                 [
-                    [InlineKeyboardButton("Refresh", callback_data=callback_path)],
+                    [InlineKeyboardButton("刷新", callback_data=callback_path)],
                 ]
             )
         else:
             reply_markup = InlineKeyboardMarkup([[]])
-        msg += f"\nUpdated: {dt_now().ctime()}"
+        msg += f"\n更新于: {dt_now().ctime()}"
         if not query.message:
             return
 
@@ -2173,7 +2154,7 @@ class Telegram(RPCHandler):
             return
         if reload_able and self._config["telegram"].get("reload", True):
             reply_markup = InlineKeyboardMarkup(
-                [[InlineKeyboardButton("Refresh", callback_data=callback_path)]]
+                [[InlineKeyboardButton("刷新", callback_data=callback_path)]]
             )
         else:
             if keyboard is not None:
@@ -2232,21 +2213,21 @@ class Telegram(RPCHandler):
             if new_market_dir is not None:
                 self._rpc._update_market_direction(new_market_dir)
                 await self._send_msg(
-                    "Successfully updated market direction"
-                    f" from *{old_market_dir}* to *{new_market_dir}*."
+                    "成功更新市场方向"
+                    f" 从 *{old_market_dir}* 到 *{new_market_dir}*。"
                 )
             else:
                 raise RPCException(
-                    "Invalid market direction provided. \n"
-                    "Valid market directions: *long, short, even, none*"
+                    "提供的市场方向无效。\n"
+                    "有效值: *long(做多), short(做空), even(中性), none(无)*"
                 )
         elif context.args is not None and len(context.args) == 0:
             old_market_dir = self._rpc._get_market_direction()
-            await self._send_msg(f"Currently set market direction: *{old_market_dir}*")
+            await self._send_msg(f"当前市场方向: *{old_market_dir}*")
         else:
             raise RPCException(
-                "Invalid usage of command /marketdir. \n"
-                "Usage: */marketdir [short | long | even | none]*"
+                "命令 /marketdir 用法无效。\n"
+                "用法: */marketdir [short | long | even | none]*"
             )
 
     async def _tg_info(self, update: Update, context: CallbackContext) -> None:
