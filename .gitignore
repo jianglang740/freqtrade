@@ -1,17 +1,35 @@
 # Freqtrade rules
-config*.json
+# 配置文件
+user_data/config/config_okx.json    # 含真实 OKX API 密钥，禁止提交
+# 其他 config_*.json 可以提交（config_all.json、config_server.json 等）
+# 数据库
 *.sqlite
 *.sqlite-shm
 *.sqlite-wal
+# 日志
+*.log
 logfile.txt
-user_data/*
-!user_data/strategy/sample_strategy.py
-!user_data/notebooks
-!user_data/models
-!user_data/freqaimodels
+user_data/logs/*
+# 回测结果（生成的二进制，不跟踪）
+user_data/backtest_results/*
+# 超参优化结果
+user_data/hyperopt_results/*
+# FreqAI 模型（大文件）
 user_data/freqaimodels/*
 user_data/models/*
+# 画图输出
+freqtrade-plot.html
+freqtrade-profit-plot.html
+# 下载的行情数据（太大，可选：想同步就注释掉下面这行）
+user_data/data/*
+# WebUI 前端（install-ui 拉取的，不属于源码）
+freqtrade/rpc/api_server/ui/*
+# 用户笔记（Jupyter notebook 可选择性跟踪）
 user_data/notebooks/*
+# 回退到原始示例策略（这个文件本身不应覆盖）
+!user_data/strategies/sample_strategy.py
+# 保留 .gitkeep 文件
+!*.gitkeep
 freqtrade-plot.html
 freqtrade-profit-plot.html
 freqtrade/rpc/api_server/ui/*

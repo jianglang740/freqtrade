@@ -1,0 +1,220 @@
+{
+    // ================================================================
+    // Freqtrade OKX 现货模拟交易配置（中文注释版）
+    // ================================================================
+    // 本配置用于 OKX 现货 dry_run 模拟交易 + Telegram 通知。
+    // 实盘请改 dry_run=false，并删除 socksProxy。
+    // ================================================================
+
+    "$schema": "https://schema.freqtrade.io/schema.json",
+
+    // ═══════════════════════════════════════
+    // 一、交易模式
+    // ═══════════════════════════════════════
+
+    // spot=现货，futures=合约，margin=杠杆
+    "trading_mode": "spot",
+
+    // ═══════════════════════════════════════
+    // 二、资金与仓位
+    // ═══════════════════════════════════════
+
+    // 最大同时持仓数量。PingPong 测试设为 1，正常策略可调大
+    "max_open_trades": 1,
+
+    // 报价货币
+    "stake_currency": "USDT",
+
+    // 每笔交易投入金额（USDT）
+    "stake_amount": 20,
+
+    // 可用资金比例。0.99 = 留 1% 余额不动
+    "tradable_balance_ratio": 0.99,
+
+    // 法币显示货币（仅用于显示换算，不影响交易）
+    "fiat_display_currency": "USD",
+
+    // ═══════════════════════════════════════
+    // 三、运行模式
+    // ═══════════════════════════════════════
+
+    // true=模拟交易（不实际下单），false=实盘
+    "dry_run": true,
+
+    // 模拟模式的初始钱包余额（USDT）
+    "dry_run_wallet": 200,
+
+    // 退出程序时是否取消所有未成交挂单
+    "cancel_open_orders_on_exit": false,
+
+    // 初始状态：running=启动即交易，stopped=等待手动 /start
+    "initial_state": "running",
+
+    // 机器人名称（显示在 Telegram 消息和 WebUI 中）
+    "bot_name": "okx_test_bot",
+
+    // 是否允许通过 Telegram / API 强制买入
+    "force_entry_enable": true,
+
+    // ═══════════════════════════════════════
+    // 四、K线周期
+    // ═══════════════════════════════════════
+
+    // 1m / 3m / 5m / 15m / 1h / 4h / 1d
+    "timeframe": "1m",
+
+    // ═══════════════════════════════════════
+    // 五、未成交订单超时
+    // ═══════════════════════════════════════
+
+    "unfilledtimeout": {
+        // 入场单超时（分钟），超时自动取消
+        "entry": 1,
+        // 离场单超时（分钟）
+        "exit": 1,
+        // 时间单位
+        "unit": "minutes"
+    },
+
+    // ═══════════════════════════════════════
+    // 六、交易所配置（OKX）
+    // ═══════════════════════════════════════
+
+    "exchange": {
+        // 交易所名称（ccxt 标准 ID）
+        "name": "okx",
+
+        // ⚠️ 以下为真实 API 密钥，请勿泄露！
+        // dry_run 模式下不会调用下单接口，但行情接口也可能需要验签
+        "key": "你的OKX_API_Key",
+        "secret": "你的OKX_Secret",
+        // OKX 特有的 API 密码（Passphrase）
+        "password": "你的OKX_Passphrase",
+
+        // ── 代理配置（国内必配，部署到境外服务器后删除）──
+        "ccxt_config": {
+            // ccxt 同步客户端走 SOCKS5 代理
+            "socksProxy": "socks5h://127.0.0.1:1080"
+        },
+        "ccxt_async_config": {
+            // ccxt 异步客户端走 SOCKS5 代理
+            "socksProxy": "socks5h://127.0.0.1:1080"
+        },
+
+        // 关闭 WebSocket（SOCKS5 代理不支持 WS，必须关掉）
+        "enable_ws": false,
+
+        // ── 交易对白名单 ──
+        "pair_whitelist": [
+            "BTC/USDT"
+        ],
+
+        // ── 交易对黑名单（支持正则）──
+        "pair_blacklist": []
+    },
+
+    // ═══════════════════════════════════════
+    // 七、订单类型
+    // ═══════════════════════════════════════
+
+    "order_types": {
+        // 入场订单：market=市价单（立即成交），limit=限价单
+        "entry": "market",
+        // 离场订单
+        "exit": "market",
+        // 止损单类型
+        "stoploss": "market",
+        // 是否在交易所服务器挂止损单（false=本地追踪）
+        "stoploss_on_exchange": false
+    },
+
+    // ═══════════════════════════════════════
+    // 八、定价策略
+    // ═══════════════════════════════════════
+
+    // 入场定价
+    "entry_pricing": {
+        // 市价单必须设为 "other"
+        "price_side": "other",
+        // 市价单不需要订单簿
+        "use_order_book": false
+    },
+
+    // 离场定价（同上）
+    "exit_pricing": {
+        "price_side": "other",
+        "use_order_book": false
+    },
+
+    // ═══════════════════════════════════════
+    // 九、交易对筛选
+    // ═══════════════════════════════════════
+
+    "pairlists": [
+        // 静态白名单：直接使用 exchange.pair_whitelist 中的列表
+        {"method": "StaticPairList"}
+    ],
+
+    // ═══════════════════════════════════════
+    // 十、Telegram 通知
+    // ═══════════════════════════════════════
+
+    "telegram": {
+        // 是否启用
+        "enabled": true,
+        // Bot Token（从 @BotFather 获取）
+        "token": "你的Bot_Token",
+        // Chat ID（从 @userinfobot 获取）
+        "chat_id": "你的Chat_ID",
+
+        // 各类型通知开关："on"=发送，"off"=不发送，"silent"=静默发送
+        "notification_settings": {
+            "status": "on",              // 定时状态报告
+            "warning": "on",             // 警告消息
+            "startup": "on",             // 启动通知
+            "entry": "on",               // 入场信号
+            "entry_fill": "on",          // 入场成交
+            "exit": {
+                "roi": "on",             // ROI 止盈离场
+                "exit_signal": "on",     // 卖出信号离场
+                "stop_loss": "on",       // 固定止损离场
+                "trailing_stop_loss": "on" // 移动止损离场
+            },
+            "exit_fill": "on"            // 离场成交
+        }
+    },
+
+    // ═══════════════════════════════════════
+    // 十一、Web API 服务器（FreqUI）
+    // ═══════════════════════════════════════
+
+    "api_server": {
+        // 是否启用 Web 界面和 REST API
+        "enabled": true,
+        // 监听地址。127.0.0.1=仅本机，0.0.0.0=所有网卡
+        "listen_ip_address": "127.0.0.1",
+        // 监听端口
+        "listen_port": 8080,
+        // 日志级别：error / info / debug
+        "verbosity": "error",
+        // 是否开启 OpenAPI 文档
+        "enable_openapi": true,
+        // JWT 签名密钥（生产环境请务必改成随机长字符串！）
+        "jwt_secret_key": "somethingRandomSomethingRandom123",
+        // 跨域白名单，[] = 不允许跨域
+        "CORS_origins": [],
+        // WebUI 登录用户名
+        "username": "freqtrader",
+        // WebUI 登录密码
+        "password": "SuperSecurePassword"
+    },
+
+    // ═══════════════════════════════════════
+    // 十二、内部参数
+    // ═══════════════════════════════════════
+
+    "internals": {
+        // 主循环间隔（秒）。值越小越灵敏，但 CPU 和 API 压力越大
+        "process_throttle_secs": 5
+    }
+}

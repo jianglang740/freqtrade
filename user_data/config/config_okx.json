@@ -1,0 +1,94 @@
+{
+    "$schema": "https://schema.freqtrade.io/schema.json",
+    "trading_mode": "spot",
+    "max_open_trades": 1,
+    "stake_currency": "USDT",
+    "stake_amount": 20,
+    "tradable_balance_ratio": 0.99,
+    "fiat_display_currency": "USD",
+    "dry_run": true,
+    "dry_run_wallet": 200,
+    "cancel_open_orders_on_exit": false,
+    "timeframe": "1m",
+
+    "unfilledtimeout": {
+        "entry": 1,
+        "exit": 1,
+        "unit": "minutes"
+    },
+
+    "exchange": {
+        "name": "okx",
+        "key": "5f2a5c93-a8ef-4102-beb6-032c45c87a22",
+        "secret": "B8B489AD16E8BC9FF4C9ADEF496273D9",
+        "password": "Jl.2018036661",
+        "ccxt_config": {
+            "socksProxy": "socks5h://127.0.0.1:1080"
+        },
+        "ccxt_async_config": {
+            "socksProxy": "socks5h://127.0.0.1:1080"
+        },
+        "enable_ws": false,
+        "pair_whitelist": [
+            "BTC/USDT"
+        ],
+        "pair_blacklist": []
+    },
+
+    "order_types": {
+        "entry": "market",
+        "exit": "market",
+        "stoploss": "market",
+        "stoploss_on_exchange": false
+    },
+    "entry_pricing": {
+        "price_side": "other",
+        "use_order_book": false
+    },
+    "exit_pricing": {
+        "price_side": "other",
+        "use_order_book": false
+    },
+
+    "pairlists": [
+        {"method": "StaticPairList"}
+    ],
+
+    "telegram": {
+        "enabled": true,
+        "token": "8956452131:AAHWeiBiNPAQIHCGVycRcr5jGnSXiFvA6Qo",
+        "chat_id": "7614122054",
+        "notification_settings": {
+            "status": "on",
+            "warning": "on",
+            "startup": "on",
+            "entry": "on",
+            "entry_fill": "on",
+            "exit": {
+                "roi": "on",
+                "exit_signal": "on",
+                "stop_loss": "on",
+                "trailing_stop_loss": "on"
+            },
+            "exit_fill": "on"
+        }
+    },
+    "api_server": {
+        "enabled": true,
+        "listen_ip_address": "127.0.0.1",
+        "listen_port": 8080,
+        "verbosity": "error",
+        "enable_openapi": true,
+        "jwt_secret_key": "somethingRandomSomethingRandom123",
+        "CORS_origins": [],
+        "username": "freqtrader",
+        "password": "SuperSecurePassword"
+    },
+
+    "bot_name": "okx_test_bot",
+    "initial_state": "running",
+    "force_entry_enable": true,
+    "internals": {
+        "process_throttle_secs": 5
+    }
+}
