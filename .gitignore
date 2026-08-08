@@ -30,9 +30,6 @@ user_data/notebooks/*
 !user_data/strategies/sample_strategy.py
 # 保留 .gitkeep 文件
 !*.gitkeep
-freqtrade-plot.html
-freqtrade-profit-plot.html
-freqtrade/rpc/api_server/ui/*
 build_helpers/ta-lib/*
 
 # Macos related
