@@ -54,7 +54,7 @@ class FibMartingaleStrategy(IStrategy):
     swing_lookback = 240  # 1m × 240 = 4小时波段
 
     # ZigZag 确认阈值：价格需从极点回撤/反弹 1.5% 才确认拐点，避免轮询模式下k线收长影线带来的噪音干扰（虚假极致）
-    zigzag_threshold = 0.020
+    zigzag_threshold = 0.010  # 价格反向 1.0% 确认拐点（原 2.0% 太严，低波动不开单）
 
     # 斐波那契回撤位（8 档 = 首仓0.382 + 7 次加仓）
     fib_levels = [0.382, 0.5, 0.618, 0.786, 0.886, 1.0, 1.272, 1.618]
@@ -86,8 +86,10 @@ class FibMartingaleStrategy(IStrategy):
         # 极值需要反向回撤确认才锁定，避免长影线噪音
         zz_highs = []
         zz_lows = []
-        confirmed_high = dataframe["high"].iloc[0]
-        confirmed_low = dataframe["low"].iloc[0]
+        # ⚠️ 用滚动窗口极值初始化，不能用 iloc[0] — 低波动市场 iloc[0] 会永久卡死
+        init_lookback = min(self.swing_lookback, len(dataframe))
+        confirmed_high = dataframe["high"].iloc[:init_lookback].max()
+        confirmed_low = dataframe["low"].iloc[:init_lookback].min()
 
         potential_high = confirmed_high
         potential_low = confirmed_low
