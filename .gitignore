@@ -1,49 +1,104 @@
-# Freqtrade rules
-# 配置文件
-user_data/config/config_okx.json    # 含真实 OKX API 密钥，禁止提交
-# 其他 config_*.json 可以提交（config_all.json、config_server.json 等）
-# 数据库
-*.sqlite
-*.sqlite-shm
-*.sqlite-wal
-# 日志
+# ╔══════════════════════════════════════════════════════════════╗
+# ║              Freqtrade 项目 .gitignore                        ║
+# ║  本地开发 → git push → 云服务器 git pull 工作流               ║
+# ╚══════════════════════════════════════════════════════════════╝
+
+# ═══════════════════════════════════════════════════════════════
+# 一、用户数据 — 选择性跟踪
+# ═══════════════════════════════════════════════════════════════
+
+# ── 配置文件 ──
+# ❌ 含真实交易所 API 密钥，绝不允许提交
+user_data/config/config_okx.json
+# ✅ 以下配置文件可以提交（不含真实密钥，云/本地通用）
+# user_data/config/config_all.json
+# user_data/config/config_server.json
+# user_data/config/config_okx_zh.jsonc
+
+# ── 策略代码 ✅ 会被 Git 跟踪 ──
+# user_data/strategies/*.py     ← 你的策略逻辑
+# user_data/strategies/*.md     ← 策略文档
+# ❌ 不覆盖官方示例
+!user_data/strategies/sample_strategy.py
+
+# ── 行情数据（.feather 文件） ──
+# ❌ 太大（几百 MB ~ GB），不适合 git
+# 💡 如果需要云服务器共享数据，把这行注释掉即可
+user_data/data/*
+
+# ── 回测结果 ──
+# ❌ 运行时生成的 ZIP/JSON，不需要版本控制
+user_data/backtest_results/*
+
+# ── 超参优化结果 ──
+# ❌ 优化产生的中间文件
+user_data/hyperopt_results/*
+
+# ── 日志 ──
+# ❌ 本地日志文件，不跟踪
 *.log
 logfile.txt
 user_data/logs/*
-# 回测结果（生成的二进制，不跟踪）
-user_data/backtest_results/*
-# 超参优化结果
-user_data/hyperopt_results/*
-# FreqAI 模型（大文件）
+
+# ── FreqAI 模型 ──
+# ❌ 训练好的模型文件，体积大
 user_data/freqaimodels/*
 user_data/models/*
-# 画图输出
+
+# ── 数据库（SQLite） ──
+# ❌ 实盘/模拟盘的交易记录数据库，本地独有
+*.sqlite
+*.sqlite-shm
+*.sqlite-wal
+
+# ── 画图输出 ──
+# ❌ plot-dataframe / plot-profit 生成的 HTML
 freqtrade-plot.html
 freqtrade-profit-plot.html
-# 下载的行情数据（太大，可选：想同步就注释掉下面这行）
-user_data/data/*
-# WebUI 前端（install-ui 拉取的，不属于源码）
-freqtrade/rpc/api_server/ui/*
-# 用户笔记（Jupyter notebook 可选择性跟踪）
+
+# ── Jupyter Notebook ──
+# ❌ 默认不跟踪，想同步删掉下面这行
 user_data/notebooks/*
-# 回退到原始示例策略（这个文件本身不应覆盖）
-!user_data/strategies/sample_strategy.py
-# 保留 .gitkeep 文件
+
+# ── .gitkeep 占位文件 ──
+# ✅ 保留空目录的占位文件
 !*.gitkeep
+
+
+# ═══════════════════════════════════════════════════════════════
+# 二、Freqtrade 框架文件 — 不跟踪
+# ═══════════════════════════════════════════════════════════════
+
+# WebUI 前端（通过 `freqtrade install-ui` 从 GitHub Release 下载的 ZIP 解压产物）
+# ❌ 不属于源码，每个环境自己 install-ui
+freqtrade/rpc/api_server/ui/*
+
+# TA-Lib 编译产物
 build_helpers/ta-lib/*
 
-# Macos related
-.DS_Store
+# 配置文件示例（✅ 官方示例允许提交）
+!config_examples/config_binance.example.json
+!config_examples/config_full.example.json
+!config_examples/config_kraken.example.json
+!config_examples/config_freqai.example.json
 
-# Byte-compiled / optimized / DLL files
+# Docker Compose 自定义配置
+docker-compose-*.yml
+
+
+# ═══════════════════════════════════════════════════════════════
+# 三、Python 项目通用
+# ═══════════════════════════════════════════════════════════════
+
+# 编译缓存
 __pycache__/
 *.py[cod]
 *$py.class
 
-# C extensions
+# C 扩展
 *.so
 
-# Distribution / packaging
+# 打包/分发
 .Python
 env/
 build/
@@ -61,18 +116,18 @@ wheels/
 *.egg-info/
 .installed.cfg
 *.egg
-
-# PyInstaller
-#  Usually these files are written by a python script from a template
-#  before PyInstaller builds the exe, so as to inject date/other infos into it.
 *.manifest
 *.spec
 
-# Installer logs
+# pip
 pip-log.txt
 pip-delete-this-directory.txt
 
-# Unit test / coverage reports
+# 虚拟环境
+.venv
+.env
+
+# 测试/覆盖率
 htmlcov/
 .tox/
 .coverage
@@ -83,50 +138,40 @@ coverage.xml
 *.cover
 .hypothesis/
 
-# Translations
+# 文档
+docs/_build/
+site/
+
+# 翻译
 *.mo
 *.pot
 
-# Django stuff:
-*.log
-local_settings.py
-
-# Flask stuff:
-instance/
-.webassets-cache
-
-# Scrapy stuff:
-.scrapy
-
-# memray
-memray-*
-
-# Sphinx documentation
-docs/_build/
-# Mkdocs documentation
-site/
-
-# PyBuilder
-target/
-
-# Jupyter Notebook
+# Jupyter
 *.ipynb_checkpoints
 
 # pyenv
 .python-version
 
-.env
-.venv
+# 其他
+target/
+memray-*
+.*_cache/
+
+
+# ═══════════════════════════════════════════════════════════════
+# 四、IDE 与操作系统
+# ═══════════════════════════════════════════════════════════════
+
+# macOS
+.DS_Store
+
+# IDE
 .idea
 .vscode
 
-.*_cache/
-
-#exceptions
-!*.gitkeep
-!config_examples/config_binance.example.json
-!config_examples/config_full.example.json
-!config_examples/config_kraken.example.json
-!config_examples/config_freqai.example.json
-
-docker-compose-*.yml
+# Django/Flask/Scrapy 遗留规则
+*.log
+local_settings.py
+instance/
+.webassets-cache
+.scrapy
