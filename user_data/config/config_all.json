@@ -31,6 +31,13 @@
         ],
         "pair_blacklist": []
     },
+    "order_types": {
+        "entry": "market",
+        "exit": "market",
+        "stoploss": "market",
+        "stoploss_on_exchange": false
+    },
+
     "entry_pricing": {
         "price_side": "same",
         "use_order_book": true,

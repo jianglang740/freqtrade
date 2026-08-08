@@ -209,12 +209,10 @@ class FibMartingaleStrategy(IStrategy):
         **kwargs,
     ) -> Optional[str]:
 
-        # 退出时清理锁定值（不论退出原因，下一次会重新锁）
-        self._locked_swings.pop(trade.id, None)
-
         # 持仓超过 30 天不盈利 → 止损退出（考虑资金使用效率和合约交易的资金费率成本）
         hold_days = (current_time - trade.open_date_utc).days
         if hold_days > 30 and current_profit < 0.01:
+            self._locked_swings.pop(trade.id, None)  # 只在真退出时清理
             return "timeout"
 
         return None
