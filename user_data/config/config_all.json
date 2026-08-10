@@ -8,7 +8,7 @@
     "tradable_balance_ratio": 1,
     "fiat_display_currency": "USD",
     "dry_run": true,
-    "timeframe": "1m",
+    "timeframe": "15m",
     "dry_run_wallet": 5000,
     "cancel_open_orders_on_exit": true,
     "unfilledtimeout": {
