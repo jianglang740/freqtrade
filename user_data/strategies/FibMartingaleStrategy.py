@@ -1,6 +1,6 @@
 from datetime import datetime
 from typing import Optional
-from freqtrade.persistence import Trade
+from freqtrade.persistence import Trade #
 from freqtrade.strategy import IStrategy
 from pandas import DataFrame
 
@@ -53,7 +53,7 @@ class FibMartingaleStrategy(IStrategy):
     # 波段识别窗口（原始滚动窗口，备用）
     swing_lookback = 240  # 1m × 240 = 4小时波段
 
-    # ZigZag 确认阈值：价格需从极点回撤/反弹 1.5% 才确认拐点，避免轮询模式下k线收长影线带来的噪音干扰（虚假极致）
+    # ZigZag 确认阈值：价格需从极点回撤/反弹 2.0% 才确认拐点，避免轮询模式下k线收长影线带来的噪音干扰（虚假极致）
     zigzag_threshold = 0.020  # 价格反向 2.0% 确认拐点
 
     # 斐波那契回撤位（8 档 = 首仓0.382 + 7 次加仓）

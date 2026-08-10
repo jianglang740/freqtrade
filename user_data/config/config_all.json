@@ -2,7 +2,7 @@
     "$schema": "https://schema.freqtrade.io/schema.json",
     "trading_mode": "futures",
     "margin_mode": "cross",
-    "max_open_trades": 5,
+    "max_open_trades": 14,
     "stake_currency": "USDT",
     "stake_amount": 200,
     "tradable_balance_ratio": 1,
