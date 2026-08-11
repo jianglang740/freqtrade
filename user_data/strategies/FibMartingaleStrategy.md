@@ -31,11 +31,12 @@
 
 ### 2.1 基础
 
-| 参数                     | 值       | 说明                  |
-| ------------------------ | -------- | --------------------- |
-| `timeframe`            | `"1m"` | 1 分钟 K 线           |
-| `can_short`            | `True` | 做多+做空             |
-| `startup_candle_count` | `250`  | 预热 250 根（4 小时） |
+| 参数                        | 值        | 说明                       |
+| --------------------------- | --------- | -------------------------- |
+| `timeframe`               | `"1m"`  | 1 分钟 K 线                |
+| `can_short`               | `True`  | 做多+做空                  |
+| `startup_candle_count`    | `250`   | 预热 250 根（4 小时）      |
+| `process_only_new_candles` | `False` | K 线中途也重算信号（关键修复，见 六.1） |
 
 ### 2.2 仓位
 
@@ -171,6 +172,7 @@
 | confirm_trade_entry 锁极值 | 入场即锁                  | +73.4% |
 | 修复 ZigZag 初始化         | iloc[0]→滚动 max/min     |  不变  |
 | 改市价单                   | limit→market，更贴近实盘 | +45.4% |
+| 信号中途重算               | process_only_new_candles=False | 待实盘验证 |
 
 ---
 
@@ -181,6 +183,46 @@
 | 实盘 0 单、回测正常 | ZigZag 用 iloc[0] 初始化，低波动永不开单 | 改用前 240 根 K 线 max/min |
 | 追踪止损无意义      | trail_activate 大于 minimal_roi          | 直接砍掉 custom_stoploss   |
 | 极值锁定时机偏晚    | 首次 DCA 时才锁                          | confirm_trade_entry 即刻锁 |
+| UI 有信号但不下单   | `process_only_new_candles=True` 默认只在新 K 线算信号，K 线中途信号被清空 | 设 `False`，每 5 秒循环重算（详见 6.1） |
+
+### 6.1 云服务器「有信号但不下单」诊断记录（2026-08-11）
+
+**现象：** 云服务器 dry-run 模式下，FreqUI 能看到入场信号标注，但 `trades` 表一直为 0，没有产生任何交易。
+
+**根因：** freqtrade 默认 `process_only_new_candles = True`——每根 K 线只在出现瞬间计算一次指标和入场信号，之后的整根 K 线生命周期内，`remove_entry_exit_signals` 会把信号列清零（而非重算）。本策略是**收盘价穿越斐波那契线**才触发入场：
+
+```
+(close < fib_dn_382) & (close.shift(1) >= fib_dn_382.shift(1))
+```
+
+穿越点出现在 K 线中途的概率远大于恰好在收盘瞬间，而中途穿越时下单逻辑读到的缓存信号已经是 0，于是 UI 上看到了信号、数据库里却一条交易都没有。
+
+**修复：** 在策略中显式设置 `process_only_new_candles = False`。这让每 5 秒的处理循环在 K 线中途也重算指标与信号，穿越瞬间即可被捕捉并触发下单。
+
+```python
+process_only_new_candles = False
+```
+
+**验证过程（排除了两个云上 AI 的错误判断）：**
+
+1. ✅ **排除「`remove_entry_exit_signals` 破坏缓存」**——`analyze_pair` → `dp.ohlcv(copy=True)` 传入的是 DataFrame 副本，信号清零不会污染缓存（freqtrade/data/dataprovider.py）。
+2. ✅ **排除「限价单拖累」**——配置优先级 `config > strategy > default`（freqtrade/resolvers/strategy_resolver.py），服务器 `config_cloud.json` 的 `order_types: market` 会覆盖策略默认限价单，实际加载已是市价单。
+3. ⚠️ **已确认「旧进程跑老配置」**——重启前服务器进程（PID 9003）日志显示 `order_types: limit`、`max_open_trades: 5`，与本地 `market/14` 不符，是 8 月 8 日启动的旧进程加载了旧配置。已随本次重启一并修复。
+4. ⚠️ **保持关注「低波动无信号」**——ZigZag 需要价格反向 2.0% 才确认拐点，行情太安静时本来就不会有信号，这不是故障（见 3.1）。判断修复是否生效，应以「信号出现时是否真的下单」为准，而非「是否有信号」。
+
+**验证标准（修复后）：**
+
+```bash
+python3 -c "
+import sqlite3
+c=sqlite3.connect('/home/ubuntu/code/freqtrade/tradesv3.dryrun.sqlite')
+print('trades:', c.execute('select count(*) from trades').fetchone()[0])
+print('orders:', c.execute('select count(*) from orders').fetchone()[0])
+"
+```
+
+- `orders` 数 > 0 → 修复生效，开始下单
+- `orders` = 0 且 UI 仍有信号 → 问题另有原因，需继续排查（stake/杠杆/最小下单量校验）
 
 ---
 
