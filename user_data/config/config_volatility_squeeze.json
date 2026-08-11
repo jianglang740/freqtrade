@@ -1,0 +1,86 @@
+{
+    "$schema": "https://schema.freqtrade.io/schema.json",
+    "trading_mode": "futures",
+    "margin_mode": "isolated",
+    "max_open_trades": 2,
+    "stake_currency": "USDT",
+    "stake_amount": "unlimited",
+    "tradable_balance_ratio": 0.8,
+    "fiat_display_currency": "USD",
+    "dry_run": true,
+    "dry_run_wallet": 500,
+    "cancel_open_orders_on_exit": true,
+    "timeframe": "1m",
+
+    "unfilledtimeout": {
+        "entry": 2,
+        "exit": 2,
+        "unit": "minutes"
+    },
+
+    "order_types": {
+        "entry": "market",
+        "exit": "market",
+        "stoploss": "market",
+        "stoploss_on_exchange": false
+    },
+
+    "entry_pricing": {
+        "price_side": "other",
+        "use_order_book": false
+    },
+
+    "exit_pricing": {
+        "price_side": "other",
+        "use_order_book": false
+    },
+
+    "exchange": {
+        "name": "okx",
+        "key": "",
+        "secret": "",
+        "password": "",
+        "ccxt_config": {
+            "enableRateLimit": true,
+            "rateLimit": 100
+        },
+        "ccxt_async_config": {
+            "enableRateLimit": true,
+            "rateLimit": 100
+        },
+        "pair_whitelist": [
+            "BTC/USDT:USDT",
+            "ETH/USDT:USDT"
+        ],
+        "pair_blacklist": []
+    },
+
+    "pairlists": [
+        {"method": "StaticPairList"}
+    ],
+
+    "telegram": {
+        "enabled": false,
+        "token": "",
+        "chat_id": ""
+    },
+
+    "api_server": {
+        "enabled": false,
+        "listen_ip_address": "127.0.0.1",
+        "listen_port": 8080,
+        "verbosity": "error",
+        "enable_openapi": true,
+        "jwt_secret_key": "somethingRandomSomethingRandom123",
+        "CORS_origins": [],
+        "username": "freqtrader",
+        "password": "SuperSecurePassword"
+    },
+
+    "bot_name": "volatility_squeeze_bot",
+    "initial_state": "running",
+    "force_entry_enable": true,
+    "internals": {
+        "process_throttle_secs": 5
+    }
+}
