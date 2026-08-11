@@ -175,3 +175,6 @@ local_settings.py
 instance/
 .webassets-cache
 .scrapy
+
+# 临时诊断目录
+.tmp_*/
