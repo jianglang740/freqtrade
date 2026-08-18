@@ -764,6 +764,6 @@ class RangeBreakAdaptiveV1(IStrategy):
         **kwargs,
     ) -> float:
         """
-        v2 uses 3x leverage for more aggressive position sizing.
+        v2 uses 1x leverage by default; leverage is a config/override decision.
         """
-        return min(3.0, max_leverage)
+        return min(1.0, max_leverage)
