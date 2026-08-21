@@ -178,3 +178,9 @@ instance/
 
 # 临时诊断目录
 .tmp_*/
+
+# 临时文件
+crypto_price_data.parquet
+price_data.parquet
+crypto_price_data_说明.md
+user_data/config/config_spot_research.json
