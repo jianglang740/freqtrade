@@ -1,0 +1,75 @@
+# 规则定义卡片：趋势回调 / H1H2L1L2 二次入场
+# 模板见 09_quantification_spec.md §6
+
+card_version: "v1"
+concept_name: "Trend Pullback & H1/H2/L1/L2 Second Entry"
+kb_references:
+  - "05_setups_and_events.md §4–6"
+  - "14_brooks_terminology_verified.md §3（H2 是腿的计数，不是第二根阳线）"
+  - "13_price_action_factors.md §4 家族 C"
+
+domain_definition: >
+  回调：趋势推进中的反向运动，默认不应把趋势中每根反向 K 线都视为反转（05 §4）。
+  H1/H2：多头背景中回调后第一次/第二次向上触发的买入尝试（05 §5）。
+  H2 是**腿的计数**，不是"最近第二根阳线"（14 §3 明文纠正）。
+
+required_context:
+  - "市场状态为 trend_up / trend_down（state_and_levels_v1）"
+  - "已确认摆动点与 HH/HL 结构（swing/structure 卡片）"
+
+observable_inputs:
+  - "close, high, low；已确认摆动高点/低点；结构标签；波动尺度"
+
+operational_definition: >
+  【回调腿计数】在 trend_up 中，取最近一个已确认的 HH（更高高点）。
+  此后每出现一个**已确认的摆动低点**（pivot_idx 在该 HH 之后），即记一条完成的回调腿。
+  设回调腿数为 k，则下一次向上触发即为 H(k)：k=1 → H1，k=2 → H2，k=3 → H3。
+  （在 trend_down 中对称地由 LL 与已确认摆动高点计数，得 L1/L2/L3。）
+
+  【触发】第 t 根 K 线收盘 > 前一根最高价（向上触发），且当时处于 trend_up 且 k >= 1。
+
+  【回调深度】pa_pullback_depth = (P_HH − 该 HH 之后的最低价) / (P_HH − HH 之前的摆动低点价)。
+  分母为前一段推进腿的幅度；分母 <=0 时记 NaN。
+
+  【持续时间】pa_pullback_duration = t − HH 的 pivot_idx。
+
+  说明：本定义**不**使用"连续 N 根反向 K 线"（05 §4 明确禁止）。
+
+confirmation_rule: >
+  回调腿只有在摆动低点**已确认**（confirmed_idx）后才计入 k，故 H(k) 的 k 值
+  在 t 时刻只统计 confirmed_idx <= t 的摆动低点。
+  触发在 bar t 收盘成立，available_at = bar t 收盘。
+
+invalidation_rule: >
+  出现新的 HH（更高高点）时，k 归零（趋势恢复，重新计数）。
+  向下触发（收盘 < 前一根最低价）使当前向上设置失效。
+
+known_false_positives:
+  - "窄幅震荡中被判为 trend_up 的段会产生密集的 H1/H2 触发（正是 05 §5 警告的'震荡中部的 H2'）"
+  - "触发只要求收盘过前一高点，力度差异未纳入，需由 feat_ 特征与状态分层补充"
+
+lookahead_risk: >
+  k 只统计已确认摆动低点；HH 必须是已确认的 HH。
+  严禁用尚未确认的极值来判定"这是第几次回调"。
+
+available_at: "k 值随摆动低点 confirmed_idx 更新；触发在 bar t 收盘"
+
+unit_test_cases:
+  - "构造 HH 后一个已确认摆动低点 → 触发时 k=1（H1）"
+  - "HH 后两个已确认摆动低点 → 触发时 k=2（H2）"
+  - "出现新 HH → k 归零"
+  - "未确认的摆动低点不计入 k"
+  - "回调深度分母为 0 时记 NaN，不记 0"
+
+visual_review_cases:
+  - "BTC 4h 取 500 根，核对标为 H2 的位置是否肉眼为第二次向上尝试"
+
+trading_hypothesis: >
+  C 组：强趋势中的浅回调 + 二次入场，可能优于追突破（05 §4）。但 05 §5 明确
+  "H2 并非天然高胜率"——强趋势回调中的 H2 与震荡中部的 H2 质量不同。
+  这正是需要条件化检验的对象，也是 15 §8 指出的"公开文献从未量化过 H2/L2"的空白。
+
+validation_plan: >
+  1) 单元测试覆盖上述用例；
+  2) 统计 H1/H2 的无条件发生率；注意 14 §4 提醒 BROOKS 的高胜率数字是其估计而非实测；
+  3) 按状态（趋势 vs 震荡）× 回调深度分层，检验条件化增量。

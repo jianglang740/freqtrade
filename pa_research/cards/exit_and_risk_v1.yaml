@@ -1,0 +1,150 @@
+# 规则定义卡片：出场与风险（结构性）
+# 模板见 09_quantification_spec.md §6
+#
+# ┌────────────────────────────────────────────────────────────────────┐
+# │ 本卡片在写任何出场代码之前冻结。                                   │
+# │ 参数一经写下不得因回测结果回溯修改 —— 否则即为 13 §1 / 18 §3 的     │
+# │ "从回测结果反推规则"。若需改动，另起 v2 并说明改动的独立理由。      │
+# └────────────────────────────────────────────────────────────────────┘
+
+card_version: "v1"
+concept_name: "Structural Exit and Risk (止损=失效点, 目标=结构位)"
+kb_references:
+  - "06_trade_logic_and_risk.md §3（止损与失效点）、§4（目标与磁吸位）、§5（Scalp/Swing 与必须声明项）、§6（风险预算）"
+  - "04_structure_and_levels.md §4（位置是带容差的区间）"
+  - "19_cost_data_and_execution.md §2.1（净期望预筛）、§3（资金费）"
+  - "09_quantification_spec.md §6（卡片模板）、§9（与执行解耦）"
+
+domain_definition: >
+  **为什么需要这张卡片。** v0 出场是一个纯波动率括号：止损 = 入场 ∓ 1×vol，
+  目标 = 入场 ± 2×vol，12 根到期。它直接违反 06 §3 的明文——
+  "止损应尽量与交易假设失效相关，**而不是仅使用固定百分比**"——
+  以及 06 §4（目标应参考结构高低点/区间另一侧/测量走势）。
+  本卡片把出场重新表述为：**止损放在让交易假设失效的位置，目标放在市场已有的位置上。**
+
+  出场不是"信号的一部分"，而是**风险管理**；按 06 §6，风险管理必须独立于信号评分。
+
+required_context:
+  - "已确认摆动点（swing_definition_v1）与由之导出的结构/位置（state_and_levels_v1）"
+  - "突破边界（failed_breakout_definition_v1 的 reference_level）"
+  - "回调腿的极值（pullback_and_h2_definition_v1）"
+
+observable_inputs:
+  - "entry 价（bar t+1 开盘）；direction ∈ {+1,−1}"
+  - "ref_level：突破事件的参照边界"
+  - "pa_pullback_anchor：回调事件的回调腿极值（多头=回调最低点，空头=回调最高点）"
+  - "pa_range_upper / pa_range_lower：最近 n_recent 个已确认摆动高/低构成的区间边界"
+  - "pa_vol_scale：波动尺度（仅用作**噪声缓冲**的度量，不再用作止损距离本身）"
+  - "fee_roundtrip = 0.0010（19 §2）"
+
+operational_definition: >
+  **止损价（06 §3：与假设失效相关）。** 按事件类型取失效点，再留 tol×vol 的噪声缓冲
+  （04 §4：位置是带容差的区间，不是单点；tol = 0.25，与 levels.py 现有取值一致）：
+
+    事件              假设失效于                      停损价
+    breakout_up       收盘回到边界下方                ref_level − tol×vol
+    breakout_down     收盘回到边界上方                ref_level + tol×vol
+    h1/h2/h3          跌破回调腿最低点                pa_pullback_anchor − tol×vol
+    l1/l2/l3          涨破回调腿最高点                pa_pullback_anchor + tol×vol
+
+  计算全部在信号根 t 已知（ref_level 与锚点均来自 confirmed_idx ≤ t 的摆动点）。
+  **止损距离 stop_dist = |entry − stop|。** 若 stop 落在入场价的错误一侧
+  （即 stop_dist ≤ 0），该事件**跳过**（不可交易）。
+
+  **目标价（06 §4：市场已有的位置）。**
+    多头 → 最近的已确认摆动高点（pa_range_upper）
+    空头 → 最近的已确认摆动低点（pa_range_lower）
+  若该位缺失、或落在入场价错误一侧，退化为**测量走势**：
+    多头 target = entry + (pa_range_upper − pa_range_lower)   [区间高度投影]
+    空头 target = entry − (pa_range_upper − pa_range_lower)
+  若仍不可得 → 跳过该事件。
+
+  **空间预筛（06 §4 "若潜在目标太近" + 19 §2.1）。**
+  仅当 **目标距离 ≥ stop_dist + 往返费用额（= FEE_ROUNDTRIP × entry）** 才接受该事件。
+  即：这笔交易至少要能覆盖成本、并剩到 1R。不满足 → 跳过。
+
+  **盘中优先级（同一根 K 线的处理顺序，保守优先）：**
+    1. 触及止损 → 以止损价出场（reason = "stop"）
+    2. 触及目标 → 以目标价出场（reason = "target"）
+    3. 收盘回到结构内（假设失效，见 confirmation_rule）→ 以该根收盘价出场
+       （reason = "invalidation"）
+    4. 否则继续；到 horizon 根仍未出场 → 以收盘价出场（reason = "horizon"）
+  同一根内止损与目标同时触及 → **取止损**（沿用 v0 的保守约定）。
+
+  **保本移动（06 §5 要求显式声明，此处声明为"开"）。**
+  当浮盈首次达到 1×stop_dist（即 1R）后，止损上移到入场价
+  （多头）/ 下移到入场价（空头）。此后止损不再移动（**不做追踪止损**，
+  06 §5 明确要求二者分开声明）。
+
+  **到期兜底。** horizon = 24 根。到期不再是主要出场方式（v0 是 12 根），
+  因为结构位目标可能比固定 2R 更远。
+
+confirmation_rule: >
+  "收盘回到结构内"的判定，按事件类型：
+    · 突破事件：多头收盘 < ref_level；空头收盘 > ref_level
+      （与 failed_breakout_definition_v1 的 FAILED_BREAKOUT_CANDIDATE 同一定义）
+    · 回调事件：多头收盘 < pa_pullback_anchor；空头收盘 > pa_pullback_anchor
+  **该事实在那一根 K 线收盘时即已知**，故出场发生在同一根收盘，
+  不构成前视（available_at = bar 收盘 = decision_time）。
+
+  注意：events.py 中 outcome/outcome_idx 是**结果标签**、且不写入交易事件表；
+  本卡片不使用它们，而是在模拟时按上述同一规则**因果地**逐根扫出来。
+
+invalidation_rule: >
+  止损被打掉、或发生失效出场后，该交易结束，不再产生第二个出场理由。
+  每笔交易恰好一个平仓记录。
+
+known_false_positives:
+  - "结构性止损通常**比 1×vol 更宽**，因此 stop_dist 变大、费/R 变小、净 R 机械改善。
+    这不是找到了 alpha，是成本效应的算术结果。报告必须同时给出**毛 R**，否则是自欺。"
+  - "回调腿极值用的是整个回调区间 [锚点, t] 的极值，可能比 Brooks 通常采用的
+    '最近一条腿的低点'更宽；这会让止损更远、胜率虚高但单笔亏损更大。"
+  - "结构位目标可能极远（例如区间上沿在很远的地方），导致大量到期兜底出场。"
+  - "测量走势的投影依赖区间高度，区间边界仅取最近 n_recent=3 个摆动点，噪声大。"
+
+lookahead_risk: >
+  **本卡片最易出错之处，逐条声明：**
+  (1) ref_level、pa_pullback_anchor、pa_range_upper/lower 全部来自 confirmed_idx ≤ t
+      的摆动点，而 swings.py 保证 confirmed_idx = pivot_idx + right，
+      即"确认"本身已含 right 根延迟 —— 不存在用枢轴当已知的情况（17 §2）。
+  (2) 失效出场用的是**收盘价**，在 bar t 收盘即可知；禁止用 bar t 的最高/最低价
+      去判定"回到结构内"（那是盘中未知的路径）。
+  (3) 保本移动的触发（浮盈达 1R）在盘中即可知，移动后的止损在**下一根**才生效，
+      避免同一根内既触发保本又触发止损的循环定义。
+  (4) 必须通过 selftest.py 的截断差分检验：把数据在 T 处截断后重算，
+      T 及之前的全部出场相关输出不得改变。
+  (5) 目标/止损用到 pa_range_upper/lower 与 pa_pullback_anchor —— 新增列必须一并
+      纳入 TRUNC_COLS，否则截断差分覆盖不到。
+
+available_at: "全部输入在信号根 t 收盘可知；成交在 t+1 开盘"
+
+unit_test_cases:
+  - "构造一个突破事件，断言 stop 恰在 ref_level 下方 tol×vol 处"
+  - "构造一个 h2 事件，断言 stop 恰在回调低点下方 tol×vol 处"
+  - "构造目标距离 < 1R + 费用 的事件，断言被预筛跳过（不产生交易）"
+  - "构造一根 K 线同时触及止损与目标，断言取止损"
+  - "构造收盘回到结构内的一根，断言 reason='invalidation' 且出场价 = 该根收盘"
+  - "构造浮盈先到 1R 后回落到入场价的一根，断言 reason='stop' 且出场价 = 入场价"
+  - "断言永不在 bar t 用其自身的 high/low 判定失效（只看收盘）"
+
+visual_review_cases:
+  - "BTC 4h 抽样，核对止损是否落在肉眼认可的结构失效点、目标是否落在结构位上"
+  - "核对每一笔 invalidation 出场，是否确为'突破/回调失败缩回结构内'那一根"
+
+trading_hypothesis: >
+  v0 的固定 2R 目标与波动率止损，把'能赚多少'与'市场在哪儿有阻力'解耦了。
+  一个当场可查的例子：BTC 2019-11-18 突破做空，目标 7998.8，其后最低 8000.00 ——
+  差 1.2 点没到 2R，回吐后仅 +1.07R 到期。8000 是整数关口。
+  假设：把目标锚在结构位、把止损锚在失效点上，能改善**每单位风险的净收益分布**，
+  即便入场信号本身没有方向性优势（入场侧结论见 结论报告.md §3）。
+  这是一个**独立于入场侧**的新假设，不与既有结论复用。
+
+validation_plan: >
+  1) 单元测试覆盖上述用例；扩展 selftest.py 的 TRUNC_COLS。
+  2) **仅在 BTC 4h 单币上**验证（用户要求收敛范围，不重跑全市场面板）。
+     入场规则完全不动，只换出场；与 v0 波动率括号**并排**报告：
+     毛 R / 净 R / 费/R / 出场原因分布 / 胜率 / 平均持仓 / 最大不利偏移。
+  3) 按事件类型与状态分层报告（18 §7.3：严禁只给混合平均）。
+  4) 报告中必须并列给出**毛 R**，以区分"结构改善"与"成本效应"。
+  5) BTC 单币 + 同一段历史 = 样本内观察，**不构成统计结论**；
+     结论只限于"实现是否正确、方向是否改变"。

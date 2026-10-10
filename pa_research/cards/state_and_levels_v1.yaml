@@ -1,0 +1,80 @@
+# 规则定义卡片：市场状态候选 + 关键位置
+# 模板见 09_quantification_spec.md §6
+# 拆成两个概念，但共用一张卡片（同属 09 §7 步骤 4–5，互为输入）
+
+card_version: "v1"
+concept_name: "Market State Candidate & Key Levels"
+
+kb_references:
+  - "02_market_states.md §1（禁止用均线斜率/ADX/固定涨跌幅定义趋势）"
+  - "04_structure_and_levels.md §4–5（位置表示为带容差的区间）"
+  - "13_price_action_factors.md §4 家族 B/E/F、§8（滚动标准化）"
+
+domain_definition: >
+  状态：一段时间内的市场分类——趋势、震荡、宽通道、转换。
+  位置：价格相对已确认结构位与区间边界的所在之处；同一方向的信号在不同位置质量不同。
+
+required_context:
+  - "已确认摆动点与结构序列（cards/swing_definition_v1.yaml、structure_definition_v1.yaml）"
+
+observable_inputs:
+  - "close, true range；已确认摆动点表；结构方向序列"
+
+operational_definition: >
+  【状态候选】不使用均线斜率、ADX 或固定涨跌幅（02 §1 明文禁止）。改用三组可观测量的组合：
+    pa_trend_efficiency = |C_t − C_{t−n}| / Σ|C_i − C_{i−1}|      (13 §4 家族 B，滚动 n)
+    pa_overlap_density  = 滚动窗口内 feat_overlap 的均值             (家族 E)
+    pa_structure_state  = 来自 structure 模块的 trend_up/trend_down/mixed
+  规则：
+    structure 为 trend_up 且 trend_efficiency 位于自身滚动上四分位 → trend_up
+    structure 为 trend_down 且 trend_efficiency 位于自身滚动上四分位 → trend_down
+    overlap_density 位于滚动上四分位且 structure 为 mixed → range
+    其余 → transition
+  阈值一律用**滚动分位数**，不用绝对值（13 §8、20 §4.3）。
+
+  【关键位置】只用已确认摆动点：
+    upper = 最近若干已确认摆动高点的最大值；lower = 最近若干已确认摆动低点的最小值
+    位置以 [level ± tol·vol] 的区间表示，tol 为容差参数，vol 为滚动波动尺度
+    pa_range_position = (C − lower) / (upper − lower)
+    pa_distance_to_swing_high/low = (价格差) / 滚动波动尺度
+    滚动波动尺度 = 过去 m 根 true range 的均值（不是固定百分比）
+
+confirmation_rule: >
+  区间/位置只在构成它的摆动点**均已确认**后才可用；
+  available_at = max(参与计算的摆动点的 confirmed_idx)。
+  distance 因子用到的"最近已确认摆动点"必须在 t 之前已确认。
+
+invalidation_rule: >
+  状态是候选标签，随新 K 线滚动更新；不撤销历史标签，只产生新值。
+  区间边界被新的已确认摆动点替换时，更新边界并在报告中保留旧值。
+
+known_false_positives:
+  - "状态在趋势/震荡交界处会来回翻转（属正常，不是错误）"
+  - "区间宽度在极窄盘整中非常小，range_position 数值不稳定"
+  - "trend_efficiency 高只表示路径有方向性，不表示方向向上（13 §4 B）"
+
+lookahead_risk: >
+  trend_efficiency 与滚动分位必须用**仅含当时历史**的滚动窗口计算，
+  禁止用全样本统计量（13 §8 明确禁止全量标准化后回填）。
+  区间边界只能来自已确认摆动点，禁止使用尚未确认的极值。
+
+available_at: "各 K 线收盘；涉及摆动点的量取其 confirmed_idx 的较晚者"
+
+unit_test_cases:
+  - "单调上涨序列 → trend_efficiency 接近 1"
+  - "纯锯齿序列 → trend_efficiency 接近 0"
+  - "滚动分位阈值只使用 t 及之前的数据（对比全样本分位应不同）"
+  - "range_position 在 lower 处为 0、upper 处为 1"
+
+visual_review_cases:
+  - "BTC 4h 取 500 根，核对被标为 range 的段是否肉眼为盘整"
+
+trading_hypothesis: >
+  位置是 01 §4 中与方向偏向、设置质量并列的独立维度：靠近区间下沿的多头设置
+  可能有更好上行空间，区间中部的同向信号常缺乏优势（04 §5）。
+  状态用于**分层**，不是入场触发。
+
+validation_plan: >
+  1) 单元测试覆盖上述用例；
+  2) 统计各状态占比，确认没有退化为单一状态；
+  3) 在统计闸门中作为分层维度，检验"位置/状态条件化是否带来增量"。

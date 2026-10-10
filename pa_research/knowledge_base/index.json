@@ -1,0 +1,113 @@
+{
+  "name": "Brooks Price Action Knowledge Base",
+  "version": "1.1",
+  "language": "zh-CN",
+  "purpose": "Domain knowledge for AI-assisted price-action analysis and quantification",
+  "layers": {
+    "domain_knowledge": ["01_core_philosophy.md", "02_market_states.md", "03_bars_and_signals.md", "04_structure_and_levels.md", "05_setups_and_events.md", "06_trade_logic_and_risk.md", "07_glossary.md"],
+    "engineering_spec": ["08_ai_reasoning_protocol.md", "09_quantification_spec.md", "10_failure_modes.md", "11_case_studies.md", "13_price_action_factors.md", "17_implementation_landscape.md"],
+    "evidence_and_validation": ["12_sources_and_limits.md", "14_brooks_terminology_verified.md", "15_quantification_case_library.md", "16_academic_evidence.md", "18_validation_playbook.md", "19_cost_data_and_execution.md", "20_bar_feature_calibration.md"]
+  },
+  "files": [
+    {
+      "path": "README.md",
+      "purpose": "README"
+    },
+    {
+      "path": "01_core_philosophy.md",
+      "purpose": "core philosophy"
+    },
+    {
+      "path": "02_market_states.md",
+      "purpose": "market states"
+    },
+    {
+      "path": "03_bars_and_signals.md",
+      "purpose": "bars and signals"
+    },
+    {
+      "path": "04_structure_and_levels.md",
+      "purpose": "structure and levels"
+    },
+    {
+      "path": "05_setups_and_events.md",
+      "purpose": "setups and events"
+    },
+    {
+      "path": "06_trade_logic_and_risk.md",
+      "purpose": "trade logic and risk"
+    },
+    {
+      "path": "07_glossary.md",
+      "purpose": "glossary"
+    },
+    {
+      "path": "08_ai_reasoning_protocol.md",
+      "purpose": "ai reasoning protocol"
+    },
+    {
+      "path": "09_quantification_spec.md",
+      "purpose": "quantification spec"
+    },
+    {
+      "path": "10_failure_modes.md",
+      "purpose": "failure modes"
+    },
+    {
+      "path": "11_case_studies.md",
+      "purpose": "case studies"
+    },
+    {
+      "path": "12_sources_and_limits.md",
+      "purpose": "sources and limits"
+    },
+    {
+      "path": "13_price_action_factors.md",
+      "purpose": "price action factor engineering"
+    },
+    {
+      "path": "14_brooks_terminology_verified.md",
+      "purpose": "terminology verified against official source; seven common misreadings"
+    },
+    {
+      "path": "15_quantification_case_library.md",
+      "purpose": "published quantification cases per concept; folklore source-checking"
+    },
+    {
+      "path": "16_academic_evidence.md",
+      "purpose": "academic evidence on TA/PA predictability; positions this KB (see section 14)"
+    },
+    {
+      "path": "17_implementation_landscape.md",
+      "purpose": "open-source implementations, licenses, and repainting pitfalls"
+    },
+    {
+      "path": "18_validation_playbook.md",
+      "purpose": "backtest validation: PBO, MinBTL, DSR, purged CV, cost realism, minimum evidence standard"
+    },
+    {
+      "path": "19_cost_data_and_execution.md",
+      "purpose": "cost, data integrity, execution assumptions (project-measured fee/funding magnitudes)"
+    },
+    {
+      "path": "20_bar_feature_calibration.md",
+      "purpose": "empirical distribution baselines for bar features (project-measured)"
+    }
+  ],
+  "usage_rules": [
+    "Read 16_academic_evidence.md section 14 BEFORE expecting this KB to describe a profitable method. This KB is a tool for making the method testable, not a validated edge.",
+    "Read 01_core_philosophy.md before interpreting chart patterns.",
+    "Use 08_ai_reasoning_protocol.md for chart analysis and explanation.",
+    "Use 09_quantification_spec.md before writing algorithmic rules.",
+    "Use 10_failure_modes.md as a mandatory review checklist.",
+    "Use 14_brooks_terminology_verified.md before coding any Brooks term: check the term has not been reduced to a bar pattern (e.g. H2 is a leg count, not the second bar).",
+    "Treat every probability figure attributed to Brooks as HIS ESTIMATE, never as a measured statistic (14 section 4).",
+    "Check 15_quantification_case_library.md section 9 before repeating any 'commonly known' price-action statistic.",
+    "Do not treat operational definitions as proven profitable strategies.",
+    "Use 13_price_action_factors.md to translate concepts into interpretable, testable factors before trading signals.",
+    "Use 18_validation_playbook.md section 12 as the acceptance gate before believing any result.",
+    "Before any backtest, read 19_cost_data_and_execution.md section 2: compute fee/R for the chosen symbol and timeframe first.",
+    "Use 20_bar_feature_calibration.md to set thresholds as quantiles rather than absolute values, and to estimate a rule's trigger frequency without backtesting.",
+    "Never code a swing/pivot from a library's raw output: all such libraries repaint (17 section 2). Store pivot_idx and confirmed_idx separately."
+  ]
+}
