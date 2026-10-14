@@ -1,0 +1,114 @@
+{
+  "$schema": "https://schema.freqtrade.io/schema.json",
+  "trading_mode": "futures",
+  "margin_mode": "cross",
+  "max_open_trades": 3,
+  "stake_currency": "USDT",
+  "stake_amount": 200,
+  "tradable_balance_ratio": 1,
+  "fiat_display_currency": "",
+  "dry_run": true,
+  "timeframe": "5m",
+  "dry_run_wallet": 5000,
+  "cancel_open_orders_on_exit": true,
+  "unfilledtimeout": {
+    "entry": 10,
+    "exit": 30
+  },
+  "exchange": {
+    "name": "binance",
+    "key": "",
+    "secret": "",
+    "ccxt_config": {
+      "socksProxy": "socks5h://127.0.0.1:1080"
+    },
+    "ccxt_async_config": {
+      "socksProxy": "socks5h://127.0.0.1:1080"
+    },
+    "pair_whitelist": [
+      "BTC/USDT:USDT",
+      "ETH/USDT:USDT"
+    ],
+    "pair_blacklist": [],
+    "enable_ws": false
+  },
+  "order_types": {
+    "entry": "market",
+    "exit": "market",
+    "stoploss": "market",
+    "stoploss_on_exchange": false
+  },
+  "entry_pricing": {
+    "price_side": "other",
+    "use_order_book": true,
+    "order_book_top": 1
+  },
+  "exit_pricing": {
+    "price_side": "other",
+    "use_order_book": true,
+    "order_book_top": 1
+  },
+  "pairlists": [
+    {
+      "method": "StaticPairList"
+    }
+  ],
+  "freqai": {
+    "enabled": false,
+    "purge_old_models": 2,
+    "train_period_days": 15,
+    "backtest_period_days": 7,
+    "save_backtest_models": false,
+    "live_retrain_hours": 0,
+    "identifier": "unique-id",
+    "feature_parameters": {
+      "include_timeframes": [
+        "3m",
+        "15m",
+        "1h"
+      ],
+      "include_corr_pairlist": [
+        "BTC/USDT:USDT",
+        "ETH/USDT:USDT"
+      ],
+      "label_period_candles": 20,
+      "include_shifted_candles": 2,
+      "DI_threshold": 0.9,
+      "weight_factor": 0.9,
+      "principal_component_analysis": false,
+      "use_SVM_to_remove_outliers": true,
+      "indicator_periods_candles": [
+        10,
+        20
+      ],
+      "plot_feature_importances": 0
+    },
+    "data_split_parameters": {
+      "test_size": 0.33,
+      "random_state": 1
+    },
+    "model_training_parameters": {}
+  },
+  "bot_name": "本地测试",
+  "force_entry_enable": true,
+  "initial_state": "running",
+  "api_server": {
+    "enabled": true,
+    "listen_ip_address": "127.0.0.1",
+    "listen_port": 8080,
+    "verbosity": "error",
+    "enable_openapi": true,
+    "jwt_secret_key": "multibot-jwt-secret-8080-0123456789abcdef",
+    "CORS_origins": [],
+    "username": "freqtrader",
+    "password": "SuperSecurePassword"
+  },
+  "internals": {
+    "process_throttle_secs": 5
+  },
+  "strategy": "SimpleMAStrategy",
+  "db_url": "sqlite:///user_data/tradesv3_8080.sqlite",
+  "datadir": "user_data/data_bot8080",
+  "logfile": "user_data/logs/bot_8080.log",
+  "use_exit_signal": false
+}
