@@ -58,7 +58,7 @@ class AgeFilter(IPairList):
             f"{self.name} - Filtering pairs with age less than "
             f"{self._min_days_listed} {plural(self._min_days_listed, 'day')}"
         ) + (
-            (" or more than {self._max_days_listed} {plural(self._max_days_listed, 'day')}")
+            (f" or more than {self._max_days_listed} {plural(self._max_days_listed, 'day')}")
             if self._max_days_listed
             else ""
         )
@@ -106,11 +106,7 @@ class AgeFilter(IPairList):
         candles = self._exchange.refresh_latest_ohlcv(needed_pairs, since_ms=since_ms, cache=False)
         if self._enabled:
             for p in pairlist.copy():
-                daily_candles = (
-                    candles[(p, "1d", self._def_candletype)]
-                    if (p, "1d", self._def_candletype) in candles
-                    else None
-                )
+                daily_candles = candles.get((p, "1d", self._def_candletype), None)
                 if not self._validate_pair_loc(p, daily_candles):
                     pairlist.remove(p)
         self.log_once(f"Validated {len(pairlist)} pairs.", logger.info)

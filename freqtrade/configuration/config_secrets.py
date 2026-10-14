@@ -20,7 +20,10 @@ _SENSITIVE_KEYS = [
     "telegram.chat_id",
     "discord.webhook_url",
     "api_server.password",
+    "api_server.jwt_secret_key",
+    "api_server.ws_token",
     "webhook.url",
+    "coingecko.api_key",
 ]
 
 
@@ -64,4 +67,4 @@ def remove_exchange_credentials(exchange_config: ExchangeConfig, dry_run: bool) 
         if "." in key:
             key1 = key.removeprefix("exchange.")
             if key1 in exchange_config:
-                exchange_config[key1] = ""
+                exchange_config[key1] = None

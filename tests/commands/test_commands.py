@@ -171,7 +171,7 @@ def test_list_exchanges(capsys):
     assert re.search(r"All exchanges supported by the ccxt library.*", captured.out)
     assert re.search(r".*binance.*", captured.out)
     assert re.search(r".*bingx.*", captured.out)
-    assert re.search(r".*bitmex.*", captured.out)
+    assert re.search(r".*poloniex.*", captured.out)
 
     # Test with --one-column --all
     args = [
@@ -184,7 +184,7 @@ def test_list_exchanges(capsys):
     captured = capsys.readouterr()
     assert re.search(r"^binance$", captured.out, re.MULTILINE)
     assert re.search(r"^bingx$", captured.out, re.MULTILINE)
-    assert re.search(r"^bitmex$", captured.out, re.MULTILINE)
+    assert re.search(r"^poloniex$", captured.out, re.MULTILINE)
 
     # Only dex
     args = [
@@ -1844,10 +1844,12 @@ def test_start_list_data(testdatadir, capsys):
     start_list_data(pargs)
     captured = capsys.readouterr()
 
-    assert "Found 5 pair / timeframe combinations." in captured.out
+    assert "Found 6 pair / timeframe combinations." in captured.out
     assert re.search(r".*Pair.*Timeframe.*Type.*\n", captured.out)
     assert re.search(r"\n.* XRP/USDT:USDT .* 5m, 1h .* futures |\n", captured.out)
     assert re.search(r"\n.* XRP/USDT:USDT .* 1h.* mark |\n", captured.out)
+    assert re.search(r"\n.* XRP/USDT:USDT .* 1h.* funding_rate |\n", captured.out)
+    assert re.search(r"\n.* UNITTEST/USDT:USDT .* 1h.* funding_rate |\n", captured.out)
 
     args = [
         "list-data",
@@ -2067,7 +2069,7 @@ def test_start_strategy_updater(mocker, tmp_path):
     pargs["config"] = None
     start_strategy_update(pargs)
     # Number of strategies in the test directory
-    assert sc_mock.call_count == 12
+    assert sc_mock.call_count == 13
 
     sc_mock.reset_mock()
     args = [

@@ -146,6 +146,30 @@ site/
 *.mo
 *.pot
 
+# Django
+*.log
+local_settings.py
+
+# Flask
+instance/
+.webassets-cache
+
+# Scrapy
+.scrapy
+
+# memray
+memray-*
+
+# PyBuilder
+target/
+
+# AI 工具
+*.local.md
+.cursor/
+.codex/
+.claude/*.local.json
+.claude/**/*.log
+
 # Jupyter
 *.ipynb_checkpoints
 

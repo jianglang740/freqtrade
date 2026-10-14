@@ -919,8 +919,10 @@ class LocalTrade:
             return
 
         logger.info(f"Updating trade (id={self.id}) ...")
-        if order.ft_order_side != "stoploss":
-            order.funding_fee = self.funding_fee_running
+        if order.ft_order_side != "stoploss" and order.funding_fee is None:
+            order.funding_fee = (
+                self.funding_fee_running if self.funding_fee_running is not None else 0.0
+            )
             # Reset running funding fees
             self.funding_fee_running = 0.0
         order_type = order.order_type.upper() if order.order_type else None
@@ -1448,6 +1450,13 @@ class LocalTrade:
         Get all custom data for this trade
         """
         return CustomDataWrapper.get_custom_data(trade_id=self.id)
+
+    def delete_custom_data(self, key: str | None = None) -> None:
+        """
+        Delete custom data for this trade
+        :param key: key of the custom data. Deletes all custom data of this trade if None.
+        """
+        CustomDataWrapper.delete_custom_data(trade_id=self.id, key=key)
 
     @property
     def nr_of_successful_entries(self) -> int:
@@ -2126,6 +2135,7 @@ class Trade(ModelBase, LocalTrade):
         for _, enter_tag, exit_reason, profit, profit_abs, count in mix_tag_perf:
             enter_tag = enter_tag if enter_tag is not None else "Other"
             exit_reason = exit_reason if exit_reason is not None else "Other"
+            profit = profit or 0.0
 
             if exit_reason is not None and enter_tag is not None:
                 mix_tag = enter_tag + " " + exit_reason
