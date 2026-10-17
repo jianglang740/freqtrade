@@ -1,0 +1,51 @@
+{
+    "$schema": "https://schema.freqtrade.io/schema.json",
+    "//": "Ema21TwoTfAtr 的 XAU 回测 config。与 config_grid_1h.json / config_turtle_4h.json 无关（那两个是正在跑的 dry-run 实例）。",
+    "//stake_amount": "必须 unlimited —— 固定手数与固定风险两种口径都由策略的 custom_stake_amount 接管，不能让 config 先把 proposed_stake 定死。",
+    "//timerange": "XAU 的 1m/5m 数据都从 2025-12-11/12 才开始（见 K线数据报告.md），timerange 不能更早。",
+    "max_open_trades": 3,
+    "stake_currency": "USDT",
+    "stake_amount": "unlimited",
+    "tradable_balance_ratio": 0.99,
+    "dry_run": true,
+    "dry_run_wallet": 10000,
+    "trading_mode": "futures",
+    "margin_mode": "isolated",
+    "timeframe": "1m",
+    "exchange": {
+        "name": "binance",
+        "key": "",
+        "secret": "",
+        "enable_ws": false,
+        "//proxy": "本机出海要走 socks 代理，与 config_grid_1h.json 一致。回测只用本地 feather 数据，但启动时仍要拉一次交易所元数据。",
+        "ccxt_config": {
+            "socksProxy": "socks5h://127.0.0.1:1080"
+        },
+        "ccxt_async_config": {
+            "socksProxy": "socks5h://127.0.0.1:1080"
+        },
+        "pair_whitelist": [
+            "XAU/USDT:USDT"
+        ],
+        "pair_blacklist": []
+    },
+    "entry_pricing": {
+        "price_side": "same",
+        "use_order_book": true,
+        "order_book_top": 1
+    },
+    "exit_pricing": {
+        "price_side": "same",
+        "use_order_book": true,
+        "order_book_top": 1
+    },
+    "pairlists": [
+        {
+            "method": "StaticPairList"
+        }
+    ],
+    "internals": {
+        "process_throttle_secs": 5
+    },
+    "dataformat_ohlcv": "feather"
+}

@@ -1,0 +1,52 @@
+{
+    "$schema": "https://schema.freqtrade.io/schema.json",
+    "//": "专门用来跑回测的 config。与 config_grid_1h.json / config_turtle_4h.json 无关，那两个是给正在跑的 dry-run 实例用的。",
+    "//trading_mode": "hlhb 用 4h、Supertrend 用 1h，这两个周期只有 futures 数据目录下有，所以必须走合约模式读数据。",
+    "max_open_trades": 3,
+    "stake_currency": "USDT",
+    "stake_amount": 1000,
+    "tradable_balance_ratio": 0.99,
+    "dry_run": true,
+    "dry_run_wallet": 10000,
+    "trading_mode": "futures",
+    "margin_mode": "isolated",
+    "timeframe": "1h",
+    "exchange": {
+        "name": "binance",
+        "key": "",
+        "secret": "",
+        "enable_ws": false,
+        "//proxy": "本机出海要走 socks 代理，与 config_grid_1h.json 一致。回测本身只用本地 feather 数据，但启动时仍要拉一次交易所元数据。",
+        "ccxt_config": {
+            "socksProxy": "socks5h://127.0.0.1:1080"
+        },
+        "ccxt_async_config": {
+            "socksProxy": "socks5h://127.0.0.1:1080"
+        },
+        "pair_whitelist": [
+            "BTC/USDT:USDT",
+            "ETH/USDT:USDT",
+            "XAU/USDT:USDT"
+        ],
+        "pair_blacklist": []
+    },
+    "entry_pricing": {
+        "price_side": "same",
+        "use_order_book": true,
+        "order_book_top": 1
+    },
+    "exit_pricing": {
+        "price_side": "same",
+        "use_order_book": true,
+        "order_book_top": 1
+    },
+    "pairlists": [
+        {
+            "method": "StaticPairList"
+        }
+    ],
+    "internals": {
+        "process_throttle_secs": 5
+    },
+    "dataformat_ohlcv": "feather"
+}
