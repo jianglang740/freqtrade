@@ -1,0 +1,9 @@
+{
+  "_comment": "网页版本地预览用的覆盖配置：只补 CORS，不动 config_grid_1h.json / config_turtle_4h.json 本身。用法见 docs/building.md 的 Web 一节。",
+  "api_server": {
+    "CORS_origins": [
+      "http://127.0.0.1:8099",
+      "http://localhost:8099"
+    ]
+  }
+}
