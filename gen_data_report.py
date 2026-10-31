@@ -190,6 +190,12 @@ def fmt_num(x: float) -> str:
     return f"{x:.10g}"
 
 
+def fmt_rate(x: float) -> str:
+    """资金费率用小数显示，避免 5.232e-05 这种科学计数法。"""
+    s = f"{x:.10f}".rstrip("0").rstrip(".")
+    return s if s not in ("", "-0") else "0"
+
+
 def tf_list(k: dict, kind: str) -> list[str]:
     return [tf for tf in TF_ORDER if tf in k.get(kind, {})]
 
@@ -223,6 +229,7 @@ def main() -> None:
 
     majors = {p: k for p, k in fut.items() if "1m" in k.get("futures", {})}
     others = {p: k for p, k in fut.items() if p not in majors}
+    total_fr = sum(1 for p in fut if "funding_rate" in fut[p])
     maj_bytes = sum(m["size"] for k in majors.values() for t in k.values() for m in t.values())
     oth_bytes = sum(m["size"] for k in others.values() for t in k.values() for m in t.values())
 
@@ -242,8 +249,8 @@ def main() -> None:
     A("## 维护规则（硬性）")
     A("")
     A(
-        "**每次拉取新数据、或对已有数据做任何增量更新，都必须重新生成本报告。**"
-        "包括但不限于："
+        "**每次拉取新数据、或对已有数据做任何增量更新，都必须重新生成 `K线数据报告.md`"
+        "（重跑下面的生成器）。**包括但不限于："
     )
     A("")
     A("- `download-data` 新增币对 / 新增周期")
@@ -299,15 +306,16 @@ def main() -> None:
     A("| 文件 | date | open | high | low | close | volume |")
     A("|---|---|---|---|---|---|---|")
 
-    def sample_row_md(label: str, path: str) -> None:
+    def sample_row_md(label: str, path: str, rate: bool = False) -> None:
         row = sample_row(path)
         if row is None:
             A(f"| {label} | — | — | — | — | — | — |")
             return
+        val = fmt_rate if rate else fmt_num
         A(
-            f"| {label} | {fmt(row['date'])} | {fmt_num(float(row['open']))} "
-            f"| {fmt_num(float(row['high']))} | {fmt_num(float(row['low']))} "
-            f"| {fmt_num(float(row['close']))} | {fmt_num(float(row['volume']))} |"
+            f"| {label} | {fmt(row['date'])} | {val(float(row['open']))} "
+            f"| {val(float(row['high']))} | {val(float(row['low']))} "
+            f"| {val(float(row['close']))} | {val(float(row['volume']))} |"
         )
 
     sample_row_md(
@@ -321,6 +329,7 @@ def main() -> None:
     sample_row_md(
         "funding（BTC 1h）",
         os.path.join(fdir, "BTC_USDT_USDT-1h-funding_rate.feather"),
+        rate=True,
     )
     A("")
     A(
@@ -374,6 +383,7 @@ def main() -> None:
         "- 配置项 `futures_funding_rate` 只是「用常数费率填补缺失的 funding」；"
         "mark 行本身不存在时，它也无济于事，结果仍是 0。"
     )
+    A("")
     A("所以「回测跑通了」不等于「资金费被算进去了」—— 先看同目录下有没有对应周期的 mark。")
     A("")
 
@@ -390,7 +400,7 @@ def main() -> None:
         "不代表数据密度。不要拿它去和 1h 的行情 K 线逐根对齐 —— 框架是按时间戳合并的。"
     )
     A("")
-    A("本机资金来源的结算间隔：")
+    A("本机 funding 文件的结算间隔：")
     A("")
     A("| 结算间隔 | 币对数 | 币对 |")
     A("|---|---|---|")
@@ -400,7 +410,7 @@ def main() -> None:
             by_cad.setdefault(meta["cadence"], []).append(p)
     for cad in sorted(by_cad):
         names = sorted(by_cad[cad])
-        shown = "、".join(names) if len(names) <= 8 else "、".join(names[:8]) + f" 等 {len(names)} 个"
+        shown = "、".join(names) if len(names) <= 8 else "、".join(names[:8]) + f"（共 {len(names)} 个）"
         A(f"| {cadence_cn(cad)} | {len(names)} | {shown} |")
     A("")
     A(
@@ -446,7 +456,7 @@ def main() -> None:
         fr_n = sum(1 for p in others if "funding_rate" in others[p])
         A(
             f"| 合约 · 其余组 | {len(others)} | 行情 {combo_desc(others, 'futures')}；"
-            f"mark {mark_n} 对；funding {fr_n} 对 | "
+            f"mark {mark_n} 对；funding {fr_n} 对（全库 {total_fr} 对） | "
             f"{fmt(lo)[:10]} → {fmt(hi)[:10]} | {oth_bytes/1e6:.1f} MB |"
         )
     A(
@@ -467,6 +477,11 @@ def main() -> None:
         A("## 三、合约 · 全周期组（含 mark / funding）")
         A("")
         A("这组是用来做日内研究与择时的主力数据。")
+        A("")
+        A(
+            "> funding 只显示在 `1h` 那一行：文件固定命名为 `-1h-funding_rate.feather`，"
+            "但行距是交易所的实际结算间隔（见第一节），不是 1 小时。"
+        )
         A("")
         for pair in sorted(majors):
             A(f"### {pair}")
@@ -498,6 +513,8 @@ def main() -> None:
                     f"共 {f1['rows']:,} 次结算，标准间隔 {cadence_cn(f1['cadence'])}{extra}。"
                 )
                 A("")
+        A("---")
+        A("")
 
     # ── 四、其余组 ────────────────────────────────────────
     if others:
@@ -560,6 +577,8 @@ def main() -> None:
                 f"最长 {max(spans)} 天，最短 {min(spans)} 天。"
             )
             A("")
+        A("---")
+        A("")
 
     # ── 五、现货 ──────────────────────────────────────────
     A("## 五、现货 spot")
@@ -624,6 +643,14 @@ def main() -> None:
         for pair, kind, tf, prev, nxt, delta in all_gaps:
             A(f"| {pair} | {KIND_CN.get(kind, kind)} | {tf} | {fmt(prev)} | {fmt(nxt)} | {delta:g} |")
         A("")
+        n_fut_gaps = sum(1 for g in all_gaps if g[1] == "futures")
+        n_mark_gaps = sum(1 for g in all_gaps if g[1] == "mark")
+        A(
+            f"行情 K 线缺口共 **{n_fut_gaps}** 处；mark 缺口共 **{n_mark_gaps}** 处"
+            + ("（都是 2–30 分钟的短时缺失，同一时段的行情 K 线没有缺口）" if n_mark_gaps else "")
+            + "。"
+        )
+        A("")
     else:
         A("没有缺口。")
         A("")
@@ -638,10 +665,15 @@ def main() -> None:
         btc_meta = fut["BTC"]["futures"]["1m"]
         flat = btc_meta.get("flat")
         missing = prev + pd.Timedelta(minutes=1)
+        lead = (
+            "行情缺口只有这一个"
+            if n_fut_gaps == 1
+            else f"这是行情缺口中的一处（行情共 {n_fut_gaps} 处）"
+        )
         A("### BTC 1m 的那个缺口")
         A("")
         A(
-            f"只有一个，位于 **{fmt(missing)} UTC**：{fmt(prev)} 之后直接跳到 {fmt(nxt)}，"
+            f"{lead}，位于 **{fmt(missing)} UTC**：{fmt(prev)} 之后直接跳到 {fmt(nxt)}，"
             f"缺了中间这一分钟（相邻间隔 {delta:g} 分钟）。"
         )
         A("")
@@ -737,7 +769,7 @@ def main() -> None:
         )
         if no_1h:
             A("")
-            A(f"只有 `4h + 1d` 的：{'、'.join(sorted(no_1h))}")
+            A(f"行情只有 `4h + 1d` 的：{'、'.join(sorted(no_1h))}")
         A("")
     A("要做日内择时必须先补（每对每周期走一次 REST，量不小）：")
     A("")
@@ -763,6 +795,13 @@ def main() -> None:
 
     A("### 其他注意事项")
     A("")
+    spot_end = max(m["end"] for p in spot.values() for m in p.values())
+    fut_end = max(m["end"] for p in fut.values() for m in p.get("futures", {}).values())
+    lag_days = int((fut_end - spot_end).total_seconds() // 86400)
+    A(
+        f"- 现货数据只到 {fmt(spot_end)[:10]}，合约行情到 {fmt(fut_end)[:10]}"
+        f"（相差约 {lag_days} 天）—— 跨现货/合约的研究要取交集。"
+    )
     A("- **XAU 是合成 24/7 TradFi 永续，不是 COMEX 真黄金。**")
     A("- 其余组币池是「今天还活着」的币 → **幸存者偏差**，退市币不在池内。")
     A("- `mark` 价格普遍晚于行情 K 线（如 BTC/ETH 从 2019-12-23 起），交易所侧限制。")
