@@ -152,8 +152,11 @@ def scan():
                 meta.update(cadence=mode, irregular=irregular,
                             max_interval=float(delta.max()) if len(delta) else 0.0)
                 checks["fund_cadence"][mode] += 1
-                if ((df[["high", "low", "close", "volume"]] != 0).any()).any():
-                    checks["fund_nonopen_nonzero"].append(pair)
+                # 新版本存 date + funding_rate 两列；老版本存 6 列、费率放在 open
+                ohlcv_cols = ["high", "low", "close", "volume"]
+                if all(c in df.columns for c in ohlcv_cols):
+                    if ((df[ohlcv_cols] != 0).any()).any():
+                        checks["fund_nonopen_nonzero"].append(pair)
             else:
                 g, mx, gl = gap_detail(df["date"], tf)
                 meta.update(gaps=g, maxgap=mx, gaplist=gl)
@@ -293,29 +296,35 @@ def main() -> None:
     )
     A("- 合约目录下每个币对最多三类文件：**行情**（`futures`）、**标记价格**（`mark`）、**资金费率**（`funding_rate`）。")
     A("")
-    A("### 字段（三类文件都是 6 列，但只有部分列有值）")
+    A("### 字段")
+    A("")
+    A("**行情 / mark：6 列**")
     A("")
     A("| 文件类型 | date | open | high | low | close | volume |")
     A("|---|---|---|---|---|---|---|")
     A("| 行情（现货 / 合约） | K 线起始时间（UTC） | 开盘价 | 最高价 | 最低价 | 收盘价 | 成交量（标的币数量） |")
     A("| mark | 同上 | 标记价开盘 | 标记价最高 | 标记价最低 | 标记价收盘 | **恒为 0**（标记价没有成交量） |")
-    A("| funding_rate | **结算时点** | **该次结算的资金费率**（小数，0.0001 = 0.01%） | 0 | 0 | 0 | 0 |")
+    A("")
+    A("**funding_rate：2 列**")
+    A("")
+    A("| 文件类型 | date | funding_rate |")
+    A("|---|---|---|")
+    A("| funding_rate | **结算时点** | **该次结算的资金费率**（小数，0.0001 = 0.01%） |")
     A("")
     A("实际数据长这样（各自文件的最后一行）：")
     A("")
     A("| 文件 | date | open | high | low | close | volume |")
     A("|---|---|---|---|---|---|---|")
 
-    def sample_row_md(label: str, path: str, rate: bool = False) -> None:
+    def sample_row_md(label: str, path: str) -> None:
         row = sample_row(path)
         if row is None:
             A(f"| {label} | — | — | — | — | — | — |")
             return
-        val = fmt_rate if rate else fmt_num
         A(
-            f"| {label} | {fmt(row['date'])} | {val(float(row['open']))} "
-            f"| {val(float(row['high']))} | {val(float(row['low']))} "
-            f"| {val(float(row['close']))} | {val(float(row['volume']))} |"
+            f"| {label} | {fmt(row['date'])} | {fmt_num(float(row['open']))} "
+            f"| {fmt_num(float(row['high']))} | {fmt_num(float(row['low']))} "
+            f"| {fmt_num(float(row['close']))} | {fmt_num(float(row['volume']))} |"
         )
 
     sample_row_md(
@@ -326,15 +335,20 @@ def main() -> None:
         "mark（BTC 1h）",
         os.path.join(fdir, "BTC_USDT_USDT-1h-mark.feather"),
     )
-    sample_row_md(
-        "funding（BTC 1h）",
-        os.path.join(fdir, "BTC_USDT_USDT-1h-funding_rate.feather"),
-        rate=True,
-    )
+    A("")
+    A("| 文件 | date | funding_rate |")
+    A("|---|---|---|")
+    fund_row = sample_row(os.path.join(fdir, "BTC_USDT_USDT-1h-funding_rate.feather"))
+    if fund_row is None:
+        A("| funding（BTC 1h） | — | — |")
+    else:
+        rate = fund_row["funding_rate"] if "funding_rate" in fund_row.index else fund_row["open"]
+        A(f"| funding（BTC 1h） | {fmt(fund_row['date'])} | {fmt_rate(float(rate))} |")
     A("")
     A(
-        "> 注意 funding 文件除 `open` 外的列全是 0 —— 它本质是一张「时点 → 费率」表，"
-        "只是沿用了 K 线的 6 列结构。"
+        "> freqtrade 2026.x 起把资金费存成 `date + funding_rate` 两列；更早的版本存成 6 列、"
+        "把费率放在 `open` 列。读取时 `data/converter/converter.py` 的 `add_candle_aliases` "
+        "会补一个 `open` 别名，所以两种格式回测都能读。本机现在统一为 2 列。"
     )
     A("")
 
@@ -520,7 +534,7 @@ def main() -> None:
     if others:
         A("## 四、合约 · 其余组")
         A("")
-        A(f"共 **{len(others)}** 个币对，周期覆盖**并不统一**（以下数字由文件现场统计）：")
+        A(f"共 **{len(others)}** 个币对（以下数字由文件现场统计）：")
         A("")
         A(f"- 行情 K 线：{combo_desc(others, 'futures')}")
         A(f"- mark：{combo_desc(others, 'mark')}")
@@ -603,17 +617,34 @@ def main() -> None:
     A("")
     A("### 自检")
     A("")
-    schema_ok = all(
-        cols == OHLCV_COLS
-        for (kind, cols), _ in checks["schemas"].items()
+    def schema_ok_for(kind: str, cols: tuple) -> bool:
+        if kind == "funding_rate":
+            # 新格式 2 列；旧格式 6 列（费率在 open）。两种都算合法。
+            return cols in (("date", "funding_rate"), ("date", "open", "high", "low", "close", "volume"))
+        return cols == OHLCV_COLS
+
+    schema_ok = all(schema_ok_for(kind, cols) for (kind, cols) in checks["schemas"])
+    legacy_fund = sum(
+        n for (kind, cols), n in checks["schemas"].items()
+        if kind == "funding_rate" and cols != ("date", "funding_rate")
+    )
+    new_fund = sum(
+        n for (kind, cols), n in checks["schemas"].items()
+        if kind == "funding_rate" and cols == ("date", "funding_rate")
     )
     A(
-        f"- 列结构：{'全部文件均为 `date/open/high/low/close/volume` 6 列' if schema_ok else '**发现异常列结构，见下方警告**'}"
+        "- 列结构："
+        + (
+            "行情 / mark 全部 6 列；funding 全部 `date + funding_rate` 2 列"
+            if schema_ok and legacy_fund == 0
+            else "**发现异常列结构，见下方警告**"
+        )
     )
+    A(f"- funding 旧 6 列格式：{legacy_fund} 个文件；新 2 列格式：{new_fund} 个文件")
     A(f"- 重复时间戳：{checks['dupes']} 行")
     A(f"- mark 文件里 volume 非 0 的币对：{len(checks['mark_vol_nonzero'])} 个"
       + (f"（{'、'.join(sorted(set(checks['mark_vol_nonzero'])))}）" if checks["mark_vol_nonzero"] else ""))
-    A(f"- funding 文件里 high/low/close/volume 非 0 的币对：{len(checks['fund_nonopen_nonzero'])} 个"
+    A(f"- funding 旧 6 列文件里 high/low/close/volume 非 0 的币对：{len(checks['fund_nonopen_nonzero'])} 个"
       + (f"（{'、'.join(sorted(set(checks['fund_nonopen_nonzero'])))}）" if checks["fund_nonopen_nonzero"] else ""))
     A("")
     if not schema_ok:
@@ -731,17 +762,34 @@ def main() -> None:
     A("")
     A("## 七、已知限制与补数")
     A("")
-    A("### funding_rate 覆盖不全")
+    A("### funding_rate 覆盖")
     A("")
     fut_pairs = sorted(fut)
     with_fr = [p for p in fut_pairs if "funding_rate" in fut[p]]
     without_fr = [p for p in fut_pairs if "funding_rate" not in fut[p]]
-    A(f"合约 {len(fut_pairs)} 个币对中，**{len(with_fr)} 个** 下载了资金费，**{len(without_fr)} 个缺失**。")
+    A(f"合约 {len(fut_pairs)} 个币对中，**{len(with_fr)} 个有 funding 文件，{len(without_fr)} 个缺失**。")
     A("")
-    A(f"- 已有：{'、'.join(with_fr)}")
     if without_fr:
         A(f"- 缺失：{'、'.join(without_fr)}")
-    A("")
+        A("")
+
+    # 末次结算明显落后于其他币对的（通常是退市 / 结算中）
+    fund_ends = []
+    for p in with_fr:
+        for tf, meta in fut[p]["funding_rate"].items():
+            fund_ends.append((p, meta["end"]))
+    if fund_ends:
+        latest = max(e for _, e in fund_ends)
+        lagging = sorted((p, e) for p, e in fund_ends if e < latest - pd.Timedelta(days=3))
+        if lagging:
+            A("末次结算明显早于其他币对（交易所侧已停止该标的结算，退市 / 结算中）：")
+            A("")
+            A("| 币对 | 末次结算 | 比全库最晚早 |")
+            A("|---|---|---|")
+            for p, e in lagging:
+                days = (latest - e).total_seconds() / 86400
+                A(f"| {p} | {fmt(e)[:16]} | {days:.0f} 天 |")
+            A("")
     irregular = [r for r in checks["fund_irregular"] if r[1] > 10]
     if irregular:
         A("结算间隔不规整的币对（中途调整过资金费周期，或数据边缘有异常间隔）：")
@@ -758,18 +806,29 @@ def main() -> None:
     A("  -p <pairs> -t 1h --candle-types funding_rate --timerange <start>-<end>")
     A("```")
     A("")
+    A(
+        "> 大批量补 funding 时，freqtrade 的并发请求可能被 Binance WAF 间歇返回 403。"
+        "可靠做法是小批次跑（每批 3 个、批间等待），或直接分页调用 "
+        "`/fapi/v1/fundingRate`（每页 1000 条，按 `date + funding_rate` 两列写 feather）。"
+    )
+    A("")
 
     A("### 其余组的日内周期")
     A("")
     if others:
         no_1h = [p for p in others if "1h" not in others[p].get("futures", {})]
-        A(
-            f"其余 {len(others)} 个币对都没有 `1m / 5m / 15m`；"
-            f"{len(others) - len(no_1h)} 个有 `1h`，{len(no_1h)} 个连 `1h` 也没有（只有 `4h + 1d`）。"
-        )
         if no_1h:
+            A(
+                f"其余 {len(others)} 个币对都没有 `1m / 5m / 15m`；"
+                f"{len(others) - len(no_1h)} 个有 `1h`，{len(no_1h)} 个连 `1h` 也没有（只有 `4h + 1d`）。"
+            )
             A("")
             A(f"行情只有 `4h + 1d` 的：{'、'.join(sorted(no_1h))}")
+        else:
+            A(
+                f"其余 {len(others)} 个币对均已有 `1h + 4h + 1d`；"
+                "仍缺 `1m / 5m / 15m`（这三档目前只有 BTC / ETH / XAU 有）。"
+            )
         A("")
     A("要做日内择时必须先补（每对每周期走一次 REST，量不小）：")
     A("")
