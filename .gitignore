@@ -212,5 +212,7 @@ user_data/config/config_spot_research.json
 # 面板数据的 parquet 是派生品（面板数据/build_panel.py 几秒即可重建），
 # 体积上百 MB，不进仓库；脚本和 manifest 照常提交
 面板数据/*.parquet
+# 归档抓取的单币缓存（fetch_spot_all.py 生成，删掉会重新下载）
+面板数据/.cache_bv/
 
 freqdroid/

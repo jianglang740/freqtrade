@@ -249,7 +249,7 @@ tmux 会话: webserver   → freqtrade webserver -c config_webserver.json
 
 **Trade 和 Webserver 用的是同一套前端（FreqUI，Vue.js 写的，打包后放在 `freqtrade/rpc/api_server/ui/installed/`）。** 面板外观一样，**但后端能用哪些 API 完全不同**——由进程的 `RunMode` 决定。
 
-在 [webserver.py:218-281](freqtrade/rpc/api_server/webserver.py#L218-L281) 里，每个路由组都挂了一个"模式门卫"依赖：
+在 [webserver.py:218-281](../../freqtrade/rpc/api_server/webserver.py#L218-L281) 里，每个路由组都挂了一个"模式门卫"依赖：
 
 ```python
 app.include_router(
@@ -264,7 +264,7 @@ app.include_router(
 )
 ```
 
-`is_trading_mode` 和 `is_webserver_mode`（定义在 [deps.py:68-75](freqtrade/rpc/api_server/deps.py#L68-L75)）会检查 `config["runmode"]`：
+`is_trading_mode` 和 `is_webserver_mode`（定义在 [deps.py:68-75](../../freqtrade/rpc/api_server/deps.py#L68-L75)）会检查 `config["runmode"]`：
 
 ```python
 def is_webserver_mode(config=Depends(get_config)):
@@ -297,7 +297,7 @@ freqtrade trade -s FibMartingaleStrategy -c user_data/config/config_fib.json --d
 freqtrade webserver -c user_data/config/config_webserver.json
 ```
 
-- **RunMode**：`RunMode.WEBSERVER`（入口在 [webserver_commands.py](freqtrade/commands/webserver_commands.py)）
+- **RunMode**：`RunMode.WEBSERVER`（入口在 [webserver_commands.py](../../freqtrade/commands/webserver_commands.py)）
 - **职责**：**不带策略、不交易**，是一个纯粹的"控制台/工作站"。它负责：
   - 跑回测（`/api/v1/backtest` 相关路由只在 webserver 模式注册）
   - 下载/管理历史数据
@@ -330,7 +330,7 @@ freqtrade webserver -c user_data/config/config_webserver.json
 
 ### 4.1 API Server 的骨架
 
-freqtrade 的 API 是基于 **FastAPI**（一个 Python Web 框架）构建的，由 **uvicorn**（ASGI 服务器）跑起来。核心类 `ApiServer` 是一个**单例**（见 [webserver.py:117-135](freqtrade/rpc/api_server/webserver.py#L117-L135)），意思是一个进程内只有一个 API Server 实例。
+freqtrade 的 API 是基于 **FastAPI**（一个 Python Web 框架）构建的，由 **uvicorn**（ASGI 服务器）跑起来。核心类 `ApiServer` 是一个**单例**（见 [webserver.py:117-135](../../freqtrade/rpc/api_server/webserver.py#L117-L135)），意思是一个进程内只有一个 API Server 实例。
 
 ```python
 class ApiServer(RPCHandler):
@@ -345,7 +345,7 @@ FastAPI 应用在 `__init__` 里创建，然后 `configure_app` 把所有路由�
 
 ### 4.2 路由注册：哪些接口"只有交易模式有"
 
-`configure_app`（[webserver.py:202-289](freqtrade/rpc/api_server/webserver.py#L202-L289)）把路由分成几个组，每组有不同的"门卫"：
+`configure_app`（[webserver.py:202-289](../../freqtrade/rpc/api_server/webserver.py#L202-L289)）把路由分成几个组，每组有不同的"门卫"：
 
 | 路由文件 | 前缀 | 模式门卫 | 干什么 |
 | ---- | ---- | ---- | ---- |
@@ -364,13 +364,13 @@ FastAPI 应用在 `__init__` 里创建，然后 `configure_app` 把所有路由�
 
 ### 4.3 认证：HTTP Basic 与 JWT
 
-面板不是谁都能进的。认证机制在 [api_auth.py](freqtrade/rpc/api_server/api_auth.py)：
+面板不是谁都能进的。认证机制在 [api_auth.py](../../freqtrade/rpc/api_server/api_auth.py)：
 
 - **HTTP Basic Auth**：每次请求带上 `Authorization: Basic base64(username:password)`。简单但令牌每次都要带。
 - **JWT（JSON Web Token）**：先 `POST /api/v1/token/login` 用用户名密码换两个令牌：
-  - `access_token`：有效期 **15 分钟**（[api_auth.py:92](freqtrade/rpc/api_server/api_auth.py#L92)），用于访问具体接口
+  - `access_token`：有效期 **15 分钟**（[api_auth.py:92](../../freqtrade/rpc/api_server/api_auth.py#L92)），用于访问具体接口
   - `refresh_token`：有效期 **30 天**，用于换新的 access_token
-- **门卫函数** `http_basic_or_jwt_token`（[api_auth.py:108](freqtrade/rpc/api_server/api_auth.py#L108)）：二选一，带 JWT 就用 JWT，否则检查 Basic。
+- **门卫函数** `http_basic_or_jwt_token`（[api_auth.py:108](../../freqtrade/rpc/api_server/api_auth.py#L108)）：二选一，带 JWT 就用 JWT，否则检查 Basic。
 
 ```python
 def http_basic_or_jwt_token(form_data=..., token=..., api_config=...):
@@ -381,17 +381,17 @@ def http_basic_or_jwt_token(form_data=..., token=..., api_config=...):
     raise HTTPException(status_code=401, detail="Unauthorized")
 ```
 
-**注意 `jwt_secret_key`**：它用来签名 JWT。如果它是默认值（`"super-secret"` / `"somethingRandomSomethingRandom123"`），[webserver.py:314-322](freqtrade/rpc/api_server/webserver.py#L314-L322) 会在日志里警告"别人可能能登录你的 bot"。**生产环境务必改掉这个值。**
+**注意 `jwt_secret_key`**：它用来签名 JWT。如果它是默认值（`"super-secret"` / `"somethingRandomSomethingRandom123"`），[webserver.py:314-322](../../freqtrade/rpc/api_server/webserver.py#L314-L322) 会在日志里警告"别人可能能登录你的 bot"。**生产环境务必改掉这个值。**
 
 ### 4.4 WebSocket：实时推送，不是轮询
 
 K 线、持仓、新成交这些数据如果靠前端每秒轮询 HTTP，会非常费。freqtrade 用了 **WebSocket**（常驻双向连接）：
 
 - 前端连 `ws://127.0.0.1:8080/api/v1/message/ws?token=xxx`
-- 服务端通过 `MessageStream`（[ws/message_stream.py](freqtrade/rpc/api_server/ws/message_stream.py)）把行情、成交通知**主动推**给前端
+- 服务端通过 `MessageStream`（[ws/message_stream.py](../../freqtrade/rpc/api_server/ws/message_stream.py)）把行情、成交通知**主动推**给前端
 - 连接是长连接，一次建立，持续收发
 
-在 [api_ws.py:116](freqtrade/rpc/api_server/api_ws.py#L116)：
+在 [api_ws.py:116](../../freqtrade/rpc/api_server/api_ws.py#L116)：
 
 ```python
 @router.websocket("/message/ws")
@@ -399,7 +399,7 @@ async def message_endpoint(...):
     ...
 ```
 
-WebSocket 的认证走 `validate_ws_token`（[api_auth.py:56](freqtrade/rpc/api_server/api_auth.py#L56)）：要么用配置的 `ws_token`，要么用 JWT。**这也解释了为什么 Nginx 里必须配那三行 `Upgrade` / `Connection: upgrade` 头**——没有它们，WebSocket 握手过不去，面板的实时部分会失灵（比如 K 线不更新、成交不出现）。
+WebSocket 的认证走 `validate_ws_token`（[api_auth.py:56](../../freqtrade/rpc/api_server/api_auth.py#L56)）：要么用配置的 `ws_token`，要么用 JWT。**这也解释了为什么 Nginx 里必须配那三行 `Upgrade` / `Connection: upgrade` 头**——没有它们，WebSocket 握手过不去，面板的实时部分会失灵（比如 K 线不更新、成交不出现）。
 
 ### 4.5 CORS：浏览器为什么拦你
 
@@ -415,7 +415,7 @@ Access-Control-Allow-Origin: http://127.0.0.1:8082
 
 浏览器才会放行真正的请求。
 
-**freqtrade 已经内置了 CORS 中间件**（[webserver.py:283-289](freqtrade/rpc/api_server/webserver.py#L283-L289)）：
+**freqtrade 已经内置了 CORS 中间件**（[webserver.py:283-289](../../freqtrade/rpc/api_server/webserver.py#L283-L289)）：
 
 ```python
 app.add_middleware(
@@ -457,7 +457,7 @@ curl -s http://127.0.0.1:8080/api/v1/ping
 
 ### 5.1 核心思想：前端直连，面板只是"接线员"
 
-很多人以为"webserver 面板会去后端汇总所有 bot 的数据"。**不是。** 真相是（从你本地 FreqUI 源码 [ftbotwrapper-*.js](freqtrade/rpc/api_server/ui/installed/assets/ftbotwrapper-D87AOxLc.js) 里可以确认）：
+很多人以为"webserver 面板会去后端汇总所有 bot 的数据"。**不是。** 真相是（从你本地 FreqUI 源码 [ftbotwrapper-*.js](../../freqtrade/rpc/api_server/ui/installed/assets/ftbotwrapper-D87AOxLc.js) 里可以确认）：
 
 > **FreqUI 前端（跑在浏览器里）直接、单独地连接每一个 bot 的 API。webserver 面板本身不中转业务数据，它只负责"记住每个 bot 的地址和登录信息"，然后前端各自去连。**
 

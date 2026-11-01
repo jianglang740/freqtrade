@@ -1,8 +1,9 @@
 #!/usr/bin/env python
 """
-复现并压力测试 `策略池/风险调整动量多空.md` 里的横截面动量多空。
+复现并压力测试 [01_原始设想.md](../01_原始设想.md) 里的横截面动量多空。
 
 变体编号沿用该文 §5.3 的事先声明（V0–V7），不做事后择优。
+产物写 `../out/study_v5_daily.csv`。
 口径：
   - 信号用 t 日收盘；成交按 t 日收盘价近似（00:00 开盘价与前一根收盘价几乎相同，
     脚本会先验证这个假设）。
@@ -12,7 +13,7 @@
 
 用法：
     source /opt/anaconda3/etc/profile.d/conda.sh && conda activate freqtrade
-    python 面板数据/xsec_momentum_study.py
+    python 策略池/横截面动量/scripts/xsec_momentum_study.py
 """
 
 from __future__ import annotations
@@ -23,10 +24,30 @@ import sys
 import numpy as np
 import pandas as pd
 
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+
+def find_root(start: str = __file__) -> str:
+    """向上找同时含 `面板数据/` 与 `user_data/` 的目录。
+
+    脚本从 面板数据/ 搬到了 策略池/横截面动量/scripts/，写死 `dirname(dirname(__file__))`
+    会指错；按目录标记找根，以后整体挪窝也不用改。
+    """
+    p = os.path.dirname(os.path.abspath(start))
+    while True:
+        if os.path.isdir(os.path.join(p, "面板数据")) and os.path.isdir(os.path.join(p, "user_data")):
+            return p
+        parent = os.path.dirname(p)
+        if parent == p:
+            raise RuntimeError("找不到项目根目录（应同时含 面板数据/ 与 user_data/）")
+        p = parent
+
+
+ROOT = find_root()
+PANEL = os.path.join(ROOT, "面板数据")
+OUT = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "out")
+
+sys.path.insert(0, PANEL)
 from panel_io import load_panel  # noqa: E402
 
-ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DATA = os.path.join(ROOT, "user_data", "data", "binance")
 FDIR = os.path.join(DATA, "futures")
 
@@ -375,7 +396,8 @@ def main() -> None:
     print(f"  O2 平均杠杆倍数 {float((vt / v5['net']).mean()):.2f}×")
 
     # 导出明细，供画图/复核
-    out = os.path.join(os.path.dirname(os.path.abspath(__file__)), "study_v5_daily.csv")
+    os.makedirs(OUT, exist_ok=True)
+    out = os.path.join(OUT, "study_v5_daily.csv")
     v5.to_csv(out)
     print(f"\n明细已写 {os.path.relpath(out, ROOT)}")
 
