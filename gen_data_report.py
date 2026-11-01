@@ -444,8 +444,10 @@ def main() -> None:
     A("|---|---|---|---|---|")
     sp_min = min(m["start"] for p in spot.values() for m in p.values())
     sp_max = max(m["end"] for p in spot.values() for m in p.values())
+    sp_tfs = sorted({tf for k in spot.values() for tf in k}, key=TF_ORDER.index)
     A(
-        f"| 现货 spot | {len(spot)} | 仅 `1d` | {fmt(sp_min)[:10]} → {fmt(sp_max)[:10]} "
+        f"| 现货 spot | {len(spot)} | {'/'.join(f'`{t}`' for t in sp_tfs)} | "
+        f"{fmt(sp_min)[:10]} → {fmt(sp_max)[:10]} "
         f"| {sum(m['size'] for p in spot.values() for m in p.values())/1e6:.1f} MB |"
     )
 
@@ -597,17 +599,24 @@ def main() -> None:
     # ── 五、现货 ──────────────────────────────────────────
     A("## 五、现货 spot")
     A("")
-    A(f"共 **{len(spot)}** 个币对，只有 `1d`。主要用于多因子截面研究。")
-    A("")
-    sp_spans = sorted(
-        ((p, m["start"], m["end"], (m["end"] - m["start"]).days)
-         for p, k in spot.items() for tf, m in k.items()),
-        key=lambda r: r[3],
+    A(
+        f"共 **{len(spot)}** 个币对，周期 {'/'.join(f'`{t}`' for t in sp_tfs)}。"
+        "主要用于多因子截面研究；小时线已于 2026-10-31 补齐，下游由 "
+        "[`面板数据/build_panel.py`](面板数据/build_panel.py) 压成长表面板。"
     )
-    A("| # | 币对 | 起 | 止 | 跨度(天) |")
-    A("|---|---|---|---|---|")
-    for i, (pair, s, e, d) in enumerate(sp_spans, 1):
-        A(f"| {i} | {pair} | {fmt(s)[:10]} | {fmt(e)[:10]} | {d} |")
+    A("")
+    A("| # | 币对 | 周期 | 起 | 止 | 根数 |")
+    A("|---|---|---|---|---|---|")
+    sp_spans = []
+    for p, k in spot.items():
+        tfs = sorted(k, key=TF_ORDER.index)
+        s = min(m["start"] for m in k.values())
+        e = max(m["end"] for m in k.values())
+        sp_spans.append((p, "/".join(tfs), s, e, sum(m["rows"] for m in k.values()),
+                         (e - s).days))
+    sp_spans.sort(key=lambda r: r[5])
+    for i, (pair, tfs, s, e, rows, _d) in enumerate(sp_spans, 1):
+        A(f"| {i} | {pair} | {tfs} | {fmt(s)[:10]} | {fmt(e)[:10]} | {rows:,} |")
     A("")
 
     # ── 六、数据质量 ──────────────────────────────────────
@@ -856,10 +865,13 @@ def main() -> None:
     A("")
     spot_end = max(m["end"] for p in spot.values() for m in p.values())
     fut_end = max(m["end"] for p in fut.values() for m in p.get("futures", {}).values())
-    lag_days = int((fut_end - spot_end).total_seconds() // 86400)
+    sp_1d_end = max((m["end"] for p in spot.values() for tf, m in p.items() if tf == "1d"),
+                    default=None)
     A(
-        f"- 现货数据只到 {fmt(spot_end)[:10]}，合约行情到 {fmt(fut_end)[:10]}"
-        f"（相差约 {lag_days} 天）—— 跨现货/合约的研究要取交集。"
+        f"- 现货 `1h` 到 {fmt(spot_end)[:16]}，`1d` 到 "
+        f"{fmt(sp_1d_end)[:10] if sp_1d_end is not None else '—'}"
+        "（日线只到最后一根**走完**的日 K，所以永远比小时线早一天）；"
+        f"合约行情到 {fmt(fut_end)[:16]}。跨市场研究要取交集。"
     )
     A("- **XAU 是合成 24/7 TradFi 永续，不是 COMEX 真黄金。**")
     A("- 其余组币池是「今天还活着」的币 → **幸存者偏差**，退市币不在池内。")
@@ -870,6 +882,104 @@ def main() -> None:
     )
     A("- `download-data` 默认**只向后追加**，不会自动往前补；补更早历史要 `--prepend`，整体重下要 `--erase`。")
     A("- 回测前先确认：目标周期有 mark 文件、有 1h funding 文件，否则资金费会被静默按 0 计（见第一节）。")
+    A("")
+
+    # ── 八、交易对池的来历 ────────────────────────────────
+    A("---")
+    A("")
+    A("## 八、交易对池是怎么选出来的")
+    A("")
+    A("### 先说结论：两边的池子不是同一条规则")
+    A("")
+    common = sorted(set(spot) & set(fut))
+    only_spot = sorted(set(spot) - set(fut))
+    only_fut = sorted(set(fut) - set(spot))
+    A(
+        f"现货 {len(spot)} 个、合约 {len(fut)} 个：**{len(common)} 个重合**，"
+        f"只在现货 {len(only_spot)} 个，只在合约 {len(only_fut)} 个。"
+    )
+    A("")
+    A("| 分组 | 数量 | 币种 |")
+    A("|---|---|---|")
+    A(f"| 现货、合约都有 | {len(common)} | — |")
+    A(f"| 只在现货 | {len(only_spot)} | {'、'.join(only_spot) or '无'} |")
+    A(f"| 只在合约 | {len(only_fut)} | {'、'.join(only_fut) or '无'} |")
+    A("")
+
+    A("### 现货这 100 个是怎么来的")
+    A("")
+    A(
+        "2026-08-20 定下的口径：按 **24 小时成交额取 Top 100**，并剔除"
+        "稳定币、黄金/包装资产（PAXG、XAUT 类）、Beta 美股代币、杠杆代币、"
+        "非 ASCII 名称、以及当时已下架或停牌的币对。最初要的是「Top 100 全部历史」，"
+        "随后简化成**只要 `1d`**；2026-10-31 为了做面板分析又补齐了 `1h`（100/100 对）。"
+    )
+    A("")
+    A(
+        "> 诚实交代：建池脚本当时放在 `/tmp`，没有入库，已经不存在了。"
+        "上面的筛法是当时的记录，**无法按原样复现**；"
+        "能复现的只有这份落盘结果（本报告扫描出来的名单）。"
+    )
+    A("")
+
+    A("### 合约这 95 个是怎么来的")
+    A("")
+    A(
+        "**不是**按合约成交额单独筛的 Top 95。可复现的证据是集合关系："
+        "合约池 = 现货池里符号能 1:1 对上 USDT-M 永续的那些，再加 XAU。"
+    )
+    A("")
+    A(
+        f"- 现货池里有 {len(only_spot)} 个没有同符号 USDT 永续，因此没有进合约池；"
+        f"最典型的是 memecoin —— Binance 只给了 1000 倍面值的永续"
+        f"（`1000PEPE`、`1000SHIB`、`1000BONK`、`1000FLOKI`），符号对不上 `PEPE/USDT:USDT` 这种写法。"
+    )
+    A(
+        "- XAU 是**合约独有**，为伦敦金研究单独加的（现货侧 XAU 被「剔除黄金」规则挡掉了）。"
+    )
+    A(
+        f"- 数量刚好闭合：`{len(spot)} − {len(only_spot)} + {len(only_fut)} = {len(fut)}`。"
+    )
+    A("")
+    A(
+        "> 哪几个币只有 1000 倍面值永续、哪个根本没有 USDT 永续，是 **Binance 交易所侧的事实**"
+        "（2026-10-31 核对 `exchangeInfo`），本地扫描看不到 —— 本地只能看到「没拉」。"
+    )
+    A("")
+
+    A("### 对研究的实际影响")
+    A("")
+    if only_spot:
+        A(
+            f"- **合约截面缺了 {'、'.join(only_spot)}**。这些是现货高成交标的，"
+            "做横截面动量/排序时属于**池子覆盖偏差**，不是样本随机缺失。"
+        )
+    if only_fut:
+        A(
+            f"- **{'、'.join(only_fut)} 不是加密资产**。做加密横截面时应剔除或单列，"
+            "否则会把「币圈动量」和「贵金属趋势」混在同一个排序里。"
+        )
+    A(
+        "- 即使重合的那 "
+        f"{len(common)} 个，**口径也不同**：现货是 `1h + 1d`（无 mark、无 funding），"
+        "合约是 `1h + 4h + 1d` 加 mark 和 funding；两边截止日期也差几天"
+        "（见「其他注意事项」）。跨市场研究要取交集。"
+    )
+    A("")
+    A("### 想把 memecoin 补进合约池")
+    A("")
+    A("```bash")
+    A("freqtrade download-data --exchange binance --trading-mode futures \\")
+    A('  -p "1000PEPE/USDT:USDT" "1000SHIB/USDT:USDT" "1000BONK/USDT:USDT" "1000FLOKI/USDT:USDT" \\')
+    A("  -t 1h 4h 1d --candle-types futures mark --timerange 20221201-")
+    A("```")
+    A("")
+    A(
+        "注意两点：① 1000 倍面值永续的**价格是原币的 1000 倍**，"
+        "做横截面时必须换算回同一尺度，别直接和 `PEPE` 的现货价比；"
+        "② funding 下载大概率会撞 403，按第七节的办法小批次补。"
+        "补完**必须重跑本脚本**，否则本节的分组表还是旧的。"
+    )
     A("")
 
     with open(OUT, "w", encoding="utf-8") as fh:

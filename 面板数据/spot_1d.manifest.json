@@ -1,0 +1,942 @@
+{
+  "schema_version": 1,
+  "built_at_utc": "2026-10-31 14:56:17",
+  "market": "spot",
+  "timeframe": "1d",
+  "source_dir": "user_data/data/binance",
+  "primary_key": [
+    "pair",
+    "date"
+  ],
+  "columns": [
+    "pair",
+    "date",
+    "open",
+    "high",
+    "low",
+    "close",
+    "volume",
+    "quote_volume"
+  ],
+  "units": {
+    "volume": "基础货币数量（交易所原始口径）",
+    "quote_volume": "估算值 = close × volume，用于流动性过滤，非交易所官方成交额",
+    "date": "UTC，毫秒精度，与 feather 一致"
+  },
+  "rows": 133476,
+  "pairs": 100,
+  "date_min": "2017-08-17 00:00",
+  "date_max": "2026-10-30 00:00",
+  "file_bytes": 4896481,
+  "skipped_files": [],
+  "build_diff": {
+    "pairs_added": [],
+    "pairs_removed": [],
+    "rows_before": 133476,
+    "rows_after": 133476,
+    "rows_added": 0,
+    "pairs_extended": {}
+  },
+  "pairs_detail": {
+    "AAVE/USDT": {
+      "rows": 2207,
+      "start": "2020-10-15 00:00",
+      "end": "2026-10-30 00:00",
+      "gaps": 0,
+      "missing_bars_est": 0,
+      "zero_volume_bars": 0,
+      "nulls": 0
+    },
+    "ACE/USDT": {
+      "rows": 1048,
+      "start": "2023-12-18 00:00",
+      "end": "2026-10-30 00:00",
+      "gaps": 0,
+      "missing_bars_est": 0,
+      "zero_volume_bars": 0,
+      "nulls": 0
+    },
+    "ADA/USDT": {
+      "rows": 3119,
+      "start": "2018-04-17 00:00",
+      "end": "2026-10-30 00:00",
+      "gaps": 0,
+      "missing_bars_est": 0,
+      "zero_volume_bars": 0,
+      "nulls": 0
+    },
+    "AERO/USDT": {
+      "rows": 106,
+      "start": "2026-07-17 00:00",
+      "end": "2026-10-30 00:00",
+      "gaps": 0,
+      "missing_bars_est": 0,
+      "zero_volume_bars": 0,
+      "nulls": 0
+    },
+    "ALGO/USDT": {
+      "rows": 2688,
+      "start": "2019-06-22 00:00",
+      "end": "2026-10-30 00:00",
+      "gaps": 0,
+      "missing_bars_est": 0,
+      "zero_volume_bars": 0,
+      "nulls": 0
+    },
+    "ALLO/USDT": {
+      "rows": 354,
+      "start": "2025-11-11 00:00",
+      "end": "2026-10-30 00:00",
+      "gaps": 0,
+      "missing_bars_est": 0,
+      "zero_volume_bars": 0,
+      "nulls": 0
+    },
+    "APT/USDT": {
+      "rows": 1473,
+      "start": "2022-10-19 00:00",
+      "end": "2026-10-30 00:00",
+      "gaps": 0,
+      "missing_bars_est": 0,
+      "zero_volume_bars": 0,
+      "nulls": 0
+    },
+    "ARB/USDT": {
+      "rows": 1318,
+      "start": "2023-03-23 00:00",
+      "end": "2026-10-30 00:00",
+      "gaps": 0,
+      "missing_bars_est": 0,
+      "zero_volume_bars": 0,
+      "nulls": 0
+    },
+    "ASTER/USDT": {
+      "rows": 390,
+      "start": "2025-10-06 00:00",
+      "end": "2026-10-30 00:00",
+      "gaps": 0,
+      "missing_bars_est": 0,
+      "zero_volume_bars": 0,
+      "nulls": 0
+    },
+    "ATOM/USDT": {
+      "rows": 2742,
+      "start": "2019-04-29 00:00",
+      "end": "2026-10-30 00:00",
+      "gaps": 0,
+      "missing_bars_est": 0,
+      "zero_volume_bars": 0,
+      "nulls": 0
+    },
+    "AVAX/USDT": {
+      "rows": 2230,
+      "start": "2020-09-22 00:00",
+      "end": "2026-10-30 00:00",
+      "gaps": 0,
+      "missing_bars_est": 0,
+      "zero_volume_bars": 0,
+      "nulls": 0
+    },
+    "BANK/USDT": {
+      "rows": 352,
+      "start": "2025-11-13 00:00",
+      "end": "2026-10-30 00:00",
+      "gaps": 0,
+      "missing_bars_est": 0,
+      "zero_volume_bars": 0,
+      "nulls": 0
+    },
+    "BB/USDT": {
+      "rows": 901,
+      "start": "2024-05-13 00:00",
+      "end": "2026-10-30 00:00",
+      "gaps": 0,
+      "missing_bars_est": 0,
+      "zero_volume_bars": 0,
+      "nulls": 0
+    },
+    "BCH/USDT": {
+      "rows": 2529,
+      "start": "2019-11-28 00:00",
+      "end": "2026-10-30 00:00",
+      "gaps": 0,
+      "missing_bars_est": 0,
+      "zero_volume_bars": 0,
+      "nulls": 0
+    },
+    "BICO/USDT": {
+      "rows": 1787,
+      "start": "2021-12-09 00:00",
+      "end": "2026-10-30 00:00",
+      "gaps": 0,
+      "missing_bars_est": 0,
+      "zero_volume_bars": 0,
+      "nulls": 0
+    },
+    "BIO/USDT": {
+      "rows": 666,
+      "start": "2025-01-03 00:00",
+      "end": "2026-10-30 00:00",
+      "gaps": 0,
+      "missing_bars_est": 0,
+      "zero_volume_bars": 0,
+      "nulls": 0
+    },
+    "BNB/USDT": {
+      "rows": 3281,
+      "start": "2017-11-06 00:00",
+      "end": "2026-10-30 00:00",
+      "gaps": 0,
+      "missing_bars_est": 0,
+      "zero_volume_bars": 0,
+      "nulls": 0
+    },
+    "BOME/USDT": {
+      "rows": 959,
+      "start": "2024-03-16 00:00",
+      "end": "2026-10-30 00:00",
+      "gaps": 0,
+      "missing_bars_est": 0,
+      "zero_volume_bars": 0,
+      "nulls": 0
+    },
+    "BONK/USDT": {
+      "rows": 1051,
+      "start": "2023-12-15 00:00",
+      "end": "2026-10-30 00:00",
+      "gaps": 0,
+      "missing_bars_est": 0,
+      "zero_volume_bars": 0,
+      "nulls": 0
+    },
+    "BTC/USDT": {
+      "rows": 3362,
+      "start": "2017-08-17 00:00",
+      "end": "2026-10-30 00:00",
+      "gaps": 0,
+      "missing_bars_est": 0,
+      "zero_volume_bars": 0,
+      "nulls": 0
+    },
+    "CAKE/USDT": {
+      "rows": 2080,
+      "start": "2021-02-19 00:00",
+      "end": "2026-10-30 00:00",
+      "gaps": 0,
+      "missing_bars_est": 0,
+      "zero_volume_bars": 0,
+      "nulls": 0
+    },
+    "CFG/USDT": {
+      "rows": 229,
+      "start": "2026-03-16 00:00",
+      "end": "2026-10-30 00:00",
+      "gaps": 0,
+      "missing_bars_est": 0,
+      "zero_volume_bars": 0,
+      "nulls": 0
+    },
+    "CHIP/USDT": {
+      "rows": 193,
+      "start": "2026-04-21 00:00",
+      "end": "2026-10-30 00:00",
+      "gaps": 0,
+      "missing_bars_est": 0,
+      "zero_volume_bars": 0,
+      "nulls": 0
+    },
+    "CRV/USDT": {
+      "rows": 2268,
+      "start": "2020-08-15 00:00",
+      "end": "2026-10-30 00:00",
+      "gaps": 0,
+      "missing_bars_est": 0,
+      "zero_volume_bars": 0,
+      "nulls": 0
+    },
+    "DASH/USDT": {
+      "rows": 2774,
+      "start": "2019-03-28 00:00",
+      "end": "2026-10-30 00:00",
+      "gaps": 0,
+      "missing_bars_est": 0,
+      "zero_volume_bars": 0,
+      "nulls": 0
+    },
+    "DEXE/USDT": {
+      "rows": 1926,
+      "start": "2021-07-23 00:00",
+      "end": "2026-10-30 00:00",
+      "gaps": 0,
+      "missing_bars_est": 0,
+      "zero_volume_bars": 0,
+      "nulls": 0
+    },
+    "DOGE/USDT": {
+      "rows": 2675,
+      "start": "2019-07-05 00:00",
+      "end": "2026-10-30 00:00",
+      "gaps": 0,
+      "missing_bars_est": 0,
+      "zero_volume_bars": 0,
+      "nulls": 0
+    },
+    "DOT/USDT": {
+      "rows": 2265,
+      "start": "2020-08-18 00:00",
+      "end": "2026-10-30 00:00",
+      "gaps": 0,
+      "missing_bars_est": 0,
+      "zero_volume_bars": 0,
+      "nulls": 0
+    },
+    "EDEN/USDT": {
+      "rows": 396,
+      "start": "2025-09-30 00:00",
+      "end": "2026-10-30 00:00",
+      "gaps": 0,
+      "missing_bars_est": 0,
+      "zero_volume_bars": 0,
+      "nulls": 0
+    },
+    "EIGEN/USDT": {
+      "rows": 760,
+      "start": "2024-10-01 00:00",
+      "end": "2026-10-30 00:00",
+      "gaps": 0,
+      "missing_bars_est": 0,
+      "zero_volume_bars": 0,
+      "nulls": 0
+    },
+    "ENA/USDT": {
+      "rows": 942,
+      "start": "2024-04-02 00:00",
+      "end": "2026-10-30 00:00",
+      "gaps": 0,
+      "missing_bars_est": 0,
+      "zero_volume_bars": 0,
+      "nulls": 0
+    },
+    "EPIC/USDT": {
+      "rows": 594,
+      "start": "2025-03-13 00:00",
+      "end": "2026-10-28 00:00",
+      "gaps": 1,
+      "missing_bars_est": 1,
+      "zero_volume_bars": 0,
+      "nulls": 0
+    },
+    "ESP/USDT": {
+      "rows": 261,
+      "start": "2026-02-12 00:00",
+      "end": "2026-10-30 00:00",
+      "gaps": 0,
+      "missing_bars_est": 0,
+      "zero_volume_bars": 0,
+      "nulls": 0
+    },
+    "ETC/USDT": {
+      "rows": 3063,
+      "start": "2018-06-12 00:00",
+      "end": "2026-10-30 00:00",
+      "gaps": 0,
+      "missing_bars_est": 0,
+      "zero_volume_bars": 0,
+      "nulls": 0
+    },
+    "ETH/USDT": {
+      "rows": 3362,
+      "start": "2017-08-17 00:00",
+      "end": "2026-10-30 00:00",
+      "gaps": 0,
+      "missing_bars_est": 0,
+      "zero_volume_bars": 0,
+      "nulls": 0
+    },
+    "ETHFI/USDT": {
+      "rows": 957,
+      "start": "2024-03-18 00:00",
+      "end": "2026-10-30 00:00",
+      "gaps": 0,
+      "missing_bars_est": 0,
+      "zero_volume_bars": 0,
+      "nulls": 0
+    },
+    "EUL/USDT": {
+      "rows": 383,
+      "start": "2025-10-13 00:00",
+      "end": "2026-10-30 00:00",
+      "gaps": 0,
+      "missing_bars_est": 0,
+      "zero_volume_bars": 0,
+      "nulls": 0
+    },
+    "FET/USDT": {
+      "rows": 2802,
+      "start": "2019-02-28 00:00",
+      "end": "2026-10-30 00:00",
+      "gaps": 0,
+      "missing_bars_est": 0,
+      "zero_volume_bars": 0,
+      "nulls": 0
+    },
+    "FIL/USDT": {
+      "rows": 2207,
+      "start": "2020-10-15 00:00",
+      "end": "2026-10-30 00:00",
+      "gaps": 0,
+      "missing_bars_est": 0,
+      "zero_volume_bars": 0,
+      "nulls": 0
+    },
+    "FLOKI/USDT": {
+      "rows": 1275,
+      "start": "2023-05-05 00:00",
+      "end": "2026-10-30 00:00",
+      "gaps": 0,
+      "missing_bars_est": 0,
+      "zero_volume_bars": 0,
+      "nulls": 0
+    },
+    "GALA/USDT": {
+      "rows": 1874,
+      "start": "2021-09-13 00:00",
+      "end": "2026-10-30 00:00",
+      "gaps": 0,
+      "missing_bars_est": 0,
+      "zero_volume_bars": 0,
+      "nulls": 0
+    },
+    "GIGGLE/USDT": {
+      "rows": 371,
+      "start": "2025-10-25 00:00",
+      "end": "2026-10-30 00:00",
+      "gaps": 0,
+      "missing_bars_est": 0,
+      "zero_volume_bars": 0,
+      "nulls": 0
+    },
+    "GPS/USDT": {
+      "rows": 606,
+      "start": "2025-03-04 00:00",
+      "end": "2026-10-30 00:00",
+      "gaps": 0,
+      "missing_bars_est": 0,
+      "zero_volume_bars": 0,
+      "nulls": 0
+    },
+    "GRAM/USDT": {
+      "rows": 121,
+      "start": "2026-07-02 00:00",
+      "end": "2026-10-30 00:00",
+      "gaps": 0,
+      "missing_bars_est": 0,
+      "zero_volume_bars": 0,
+      "nulls": 0
+    },
+    "HBAR/USDT": {
+      "rows": 2589,
+      "start": "2019-09-29 00:00",
+      "end": "2026-10-30 00:00",
+      "gaps": 0,
+      "missing_bars_est": 0,
+      "zero_volume_bars": 0,
+      "nulls": 0
+    },
+    "HEI/USDT": {
+      "rows": 625,
+      "start": "2025-02-13 00:00",
+      "end": "2026-10-30 00:00",
+      "gaps": 0,
+      "missing_bars_est": 0,
+      "zero_volume_bars": 0,
+      "nulls": 0
+    },
+    "HEMI/USDT": {
+      "rows": 403,
+      "start": "2025-09-23 00:00",
+      "end": "2026-10-30 00:00",
+      "gaps": 0,
+      "missing_bars_est": 0,
+      "zero_volume_bars": 0,
+      "nulls": 0
+    },
+    "HOME/USDT": {
+      "rows": 506,
+      "start": "2025-06-12 00:00",
+      "end": "2026-10-30 00:00",
+      "gaps": 0,
+      "missing_bars_est": 0,
+      "zero_volume_bars": 0,
+      "nulls": 0
+    },
+    "ICP/USDT": {
+      "rows": 1999,
+      "start": "2021-05-11 00:00",
+      "end": "2026-10-30 00:00",
+      "gaps": 0,
+      "missing_bars_est": 0,
+      "zero_volume_bars": 0,
+      "nulls": 0
+    },
+    "INJ/USDT": {
+      "rows": 2201,
+      "start": "2020-10-21 00:00",
+      "end": "2026-10-30 00:00",
+      "gaps": 0,
+      "missing_bars_est": 0,
+      "zero_volume_bars": 0,
+      "nulls": 0
+    },
+    "JST/USDT": {
+      "rows": 2272,
+      "start": "2020-08-11 00:00",
+      "end": "2026-10-30 00:00",
+      "gaps": 0,
+      "missing_bars_est": 0,
+      "zero_volume_bars": 0,
+      "nulls": 0
+    },
+    "KAITO/USDT": {
+      "rows": 618,
+      "start": "2025-02-20 00:00",
+      "end": "2026-10-30 00:00",
+      "gaps": 0,
+      "missing_bars_est": 0,
+      "zero_volume_bars": 0,
+      "nulls": 0
+    },
+    "LDO/USDT": {
+      "rows": 1636,
+      "start": "2022-05-09 00:00",
+      "end": "2026-10-30 00:00",
+      "gaps": 0,
+      "missing_bars_est": 0,
+      "zero_volume_bars": 0,
+      "nulls": 0
+    },
+    "LINK/USDT": {
+      "rows": 2845,
+      "start": "2019-01-16 00:00",
+      "end": "2026-10-30 00:00",
+      "gaps": 0,
+      "missing_bars_est": 0,
+      "zero_volume_bars": 0,
+      "nulls": 0
+    },
+    "LTC/USDT": {
+      "rows": 3244,
+      "start": "2017-12-13 00:00",
+      "end": "2026-10-30 00:00",
+      "gaps": 0,
+      "missing_bars_est": 0,
+      "zero_volume_bars": 0,
+      "nulls": 0
+    },
+    "MEGA/USDT": {
+      "rows": 184,
+      "start": "2026-04-30 00:00",
+      "end": "2026-10-30 00:00",
+      "gaps": 0,
+      "missing_bars_est": 0,
+      "zero_volume_bars": 0,
+      "nulls": 0
+    },
+    "MET/USDT": {
+      "rows": 352,
+      "start": "2025-11-13 00:00",
+      "end": "2026-10-30 00:00",
+      "gaps": 0,
+      "missing_bars_est": 0,
+      "zero_volume_bars": 0,
+      "nulls": 0
+    },
+    "MORPHO/USDT": {
+      "rows": 393,
+      "start": "2025-10-03 00:00",
+      "end": "2026-10-30 00:00",
+      "gaps": 0,
+      "missing_bars_est": 0,
+      "zero_volume_bars": 0,
+      "nulls": 0
+    },
+    "MUB/USDT": {
+      "rows": 142,
+      "start": "2026-06-11 00:00",
+      "end": "2026-10-30 00:00",
+      "gaps": 0,
+      "missing_bars_est": 0,
+      "zero_volume_bars": 0,
+      "nulls": 0
+    },
+    "MUBARAK/USDT": {
+      "rows": 583,
+      "start": "2025-03-27 00:00",
+      "end": "2026-10-30 00:00",
+      "gaps": 0,
+      "missing_bars_est": 0,
+      "zero_volume_bars": 0,
+      "nulls": 0
+    },
+    "NEAR/USDT": {
+      "rows": 2208,
+      "start": "2020-10-14 00:00",
+      "end": "2026-10-30 00:00",
+      "gaps": 0,
+      "missing_bars_est": 0,
+      "zero_volume_bars": 0,
+      "nulls": 0
+    },
+    "NEIRO/USDT": {
+      "rows": 775,
+      "start": "2024-09-16 00:00",
+      "end": "2026-10-30 00:00",
+      "gaps": 0,
+      "missing_bars_est": 0,
+      "zero_volume_bars": 0,
+      "nulls": 0
+    },
+    "ONDO/USDT": {
+      "rows": 568,
+      "start": "2025-04-11 00:00",
+      "end": "2026-10-30 00:00",
+      "gaps": 0,
+      "missing_bars_est": 0,
+      "zero_volume_bars": 0,
+      "nulls": 0
+    },
+    "OP/USDT": {
+      "rows": 1613,
+      "start": "2022-06-01 00:00",
+      "end": "2026-10-30 00:00",
+      "gaps": 0,
+      "missing_bars_est": 0,
+      "zero_volume_bars": 0,
+      "nulls": 0
+    },
+    "ORDI/USDT": {
+      "rows": 1089,
+      "start": "2023-11-07 00:00",
+      "end": "2026-10-30 00:00",
+      "gaps": 0,
+      "missing_bars_est": 0,
+      "zero_volume_bars": 0,
+      "nulls": 0
+    },
+    "PENDLE/USDT": {
+      "rows": 1216,
+      "start": "2023-07-03 00:00",
+      "end": "2026-10-30 00:00",
+      "gaps": 0,
+      "missing_bars_est": 0,
+      "zero_volume_bars": 0,
+      "nulls": 0
+    },
+    "PENGU/USDT": {
+      "rows": 683,
+      "start": "2024-12-17 00:00",
+      "end": "2026-10-30 00:00",
+      "gaps": 0,
+      "missing_bars_est": 0,
+      "zero_volume_bars": 0,
+      "nulls": 0
+    },
+    "PEPE/USDT": {
+      "rows": 1275,
+      "start": "2023-05-05 00:00",
+      "end": "2026-10-30 00:00",
+      "gaps": 0,
+      "missing_bars_est": 0,
+      "zero_volume_bars": 0,
+      "nulls": 0
+    },
+    "PLUME/USDT": {
+      "rows": 439,
+      "start": "2025-08-18 00:00",
+      "end": "2026-10-30 00:00",
+      "gaps": 0,
+      "missing_bars_est": 0,
+      "zero_volume_bars": 0,
+      "nulls": 0
+    },
+    "PNUT/USDT": {
+      "rows": 719,
+      "start": "2024-11-11 00:00",
+      "end": "2026-10-30 00:00",
+      "gaps": 0,
+      "missing_bars_est": 0,
+      "zero_volume_bars": 0,
+      "nulls": 0
+    },
+    "POL/USDT": {
+      "rows": 778,
+      "start": "2024-09-13 00:00",
+      "end": "2026-10-30 00:00",
+      "gaps": 0,
+      "missing_bars_est": 0,
+      "zero_volume_bars": 0,
+      "nulls": 0
+    },
+    "PORTAL/USDT": {
+      "rows": 975,
+      "start": "2024-02-29 00:00",
+      "end": "2026-10-30 00:00",
+      "gaps": 0,
+      "missing_bars_est": 0,
+      "zero_volume_bars": 0,
+      "nulls": 0
+    },
+    "PUMP/USDT": {
+      "rows": 415,
+      "start": "2025-09-11 00:00",
+      "end": "2026-10-30 00:00",
+      "gaps": 0,
+      "missing_bars_est": 0,
+      "zero_volume_bars": 0,
+      "nulls": 0
+    },
+    "RE/USDT": {
+      "rows": 135,
+      "start": "2026-06-18 00:00",
+      "end": "2026-10-30 00:00",
+      "gaps": 0,
+      "missing_bars_est": 0,
+      "zero_volume_bars": 0,
+      "nulls": 0
+    },
+    "RED/USDT": {
+      "rows": 610,
+      "start": "2025-02-28 00:00",
+      "end": "2026-10-30 00:00",
+      "gaps": 0,
+      "missing_bars_est": 0,
+      "zero_volume_bars": 0,
+      "nulls": 0
+    },
+    "RENDER/USDT": {
+      "rows": 827,
+      "start": "2024-07-26 00:00",
+      "end": "2026-10-30 00:00",
+      "gaps": 0,
+      "missing_bars_est": 0,
+      "zero_volume_bars": 0,
+      "nulls": 0
+    },
+    "ROBO/USDT": {
+      "rows": 241,
+      "start": "2026-03-04 00:00",
+      "end": "2026-10-30 00:00",
+      "gaps": 0,
+      "missing_bars_est": 0,
+      "zero_volume_bars": 0,
+      "nulls": 0
+    },
+    "RUNE/USDT": {
+      "rows": 2248,
+      "start": "2020-09-04 00:00",
+      "end": "2026-10-30 00:00",
+      "gaps": 0,
+      "missing_bars_est": 0,
+      "zero_volume_bars": 0,
+      "nulls": 0
+    },
+    "SEI/USDT": {
+      "rows": 1173,
+      "start": "2023-08-15 00:00",
+      "end": "2026-10-30 00:00",
+      "gaps": 0,
+      "missing_bars_est": 0,
+      "zero_volume_bars": 0,
+      "nulls": 0
+    },
+    "SHIB/USDT": {
+      "rows": 2000,
+      "start": "2021-05-10 00:00",
+      "end": "2026-10-30 00:00",
+      "gaps": 0,
+      "missing_bars_est": 0,
+      "zero_volume_bars": 0,
+      "nulls": 0
+    },
+    "SKY/USDT": {
+      "rows": 409,
+      "start": "2025-09-17 00:00",
+      "end": "2026-10-30 00:00",
+      "gaps": 0,
+      "missing_bars_est": 0,
+      "zero_volume_bars": 0,
+      "nulls": 0
+    },
+    "SOL/USDT": {
+      "rows": 2272,
+      "start": "2020-08-11 00:00",
+      "end": "2026-10-30 00:00",
+      "gaps": 0,
+      "missing_bars_est": 0,
+      "zero_volume_bars": 0,
+      "nulls": 0
+    },
+    "SUI/USDT": {
+      "rows": 1277,
+      "start": "2023-05-03 00:00",
+      "end": "2026-10-30 00:00",
+      "gaps": 0,
+      "missing_bars_est": 0,
+      "zero_volume_bars": 0,
+      "nulls": 0
+    },
+    "TAO/USDT": {
+      "rows": 933,
+      "start": "2024-04-11 00:00",
+      "end": "2026-10-30 00:00",
+      "gaps": 0,
+      "missing_bars_est": 0,
+      "zero_volume_bars": 0,
+      "nulls": 0
+    },
+    "TIA/USDT": {
+      "rows": 1096,
+      "start": "2023-10-31 00:00",
+      "end": "2026-10-30 00:00",
+      "gaps": 0,
+      "missing_bars_est": 0,
+      "zero_volume_bars": 0,
+      "nulls": 0
+    },
+    "TREE/USDT": {
+      "rows": 459,
+      "start": "2025-07-29 00:00",
+      "end": "2026-10-30 00:00",
+      "gaps": 0,
+      "missing_bars_est": 0,
+      "zero_volume_bars": 0,
+      "nulls": 0
+    },
+    "TRUMP/USDT": {
+      "rows": 650,
+      "start": "2025-01-19 00:00",
+      "end": "2026-10-30 00:00",
+      "gaps": 0,
+      "missing_bars_est": 0,
+      "zero_volume_bars": 0,
+      "nulls": 0
+    },
+    "TRX/USDT": {
+      "rows": 3064,
+      "start": "2018-06-11 00:00",
+      "end": "2026-10-30 00:00",
+      "gaps": 0,
+      "missing_bars_est": 0,
+      "zero_volume_bars": 0,
+      "nulls": 0
+    },
+    "TUT/USDT": {
+      "rows": 583,
+      "start": "2025-03-27 00:00",
+      "end": "2026-10-30 00:00",
+      "gaps": 0,
+      "missing_bars_est": 0,
+      "zero_volume_bars": 0,
+      "nulls": 0
+    },
+    "U/USDT": {
+      "rows": 291,
+      "start": "2026-01-13 00:00",
+      "end": "2026-10-30 00:00",
+      "gaps": 0,
+      "missing_bars_est": 0,
+      "zero_volume_bars": 0,
+      "nulls": 0
+    },
+    "UNI/USDT": {
+      "rows": 2235,
+      "start": "2020-09-17 00:00",
+      "end": "2026-10-30 00:00",
+      "gaps": 0,
+      "missing_bars_est": 0,
+      "zero_volume_bars": 0,
+      "nulls": 0
+    },
+    "VIRTUAL/USDT": {
+      "rows": 568,
+      "start": "2025-04-11 00:00",
+      "end": "2026-10-30 00:00",
+      "gaps": 0,
+      "missing_bars_est": 0,
+      "zero_volume_bars": 0,
+      "nulls": 0
+    },
+    "WLD/USDT": {
+      "rows": 1195,
+      "start": "2023-07-24 00:00",
+      "end": "2026-10-30 00:00",
+      "gaps": 0,
+      "missing_bars_est": 0,
+      "zero_volume_bars": 0,
+      "nulls": 0
+    },
+    "WLFI/USDT": {
+      "rows": 425,
+      "start": "2025-09-01 00:00",
+      "end": "2026-10-30 00:00",
+      "gaps": 0,
+      "missing_bars_est": 0,
+      "zero_volume_bars": 0,
+      "nulls": 0
+    },
+    "XLM/USDT": {
+      "rows": 3075,
+      "start": "2018-05-31 00:00",
+      "end": "2026-10-30 00:00",
+      "gaps": 0,
+      "missing_bars_est": 0,
+      "zero_volume_bars": 0,
+      "nulls": 0
+    },
+    "XPL/USDT": {
+      "rows": 401,
+      "start": "2025-09-25 00:00",
+      "end": "2026-10-30 00:00",
+      "gaps": 0,
+      "missing_bars_est": 0,
+      "zero_volume_bars": 0,
+      "nulls": 0
+    },
+    "XRP/USDT": {
+      "rows": 3102,
+      "start": "2018-05-04 00:00",
+      "end": "2026-10-30 00:00",
+      "gaps": 0,
+      "missing_bars_est": 0,
+      "zero_volume_bars": 0,
+      "nulls": 0
+    },
+    "ZAMA/USDT": {
+      "rows": 271,
+      "start": "2026-02-02 00:00",
+      "end": "2026-10-30 00:00",
+      "gaps": 0,
+      "missing_bars_est": 0,
+      "zero_volume_bars": 0,
+      "nulls": 0
+    },
+    "ZEC/USDT": {
+      "rows": 2781,
+      "start": "2019-03-21 00:00",
+      "end": "2026-10-30 00:00",
+      "gaps": 0,
+      "missing_bars_est": 0,
+      "zero_volume_bars": 0,
+      "nulls": 0
+    },
+    "ZRO/USDT": {
+      "rows": 863,
+      "start": "2024-06-20 00:00",
+      "end": "2026-10-30 00:00",
+      "gaps": 0,
+      "missing_bars_est": 0,
+      "zero_volume_bars": 0,
+      "nulls": 0
+    }
+  }
+}

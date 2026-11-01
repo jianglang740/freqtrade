@@ -1,0 +1,47 @@
+{
+    "//": "仅用于下载现货 K 线（面板数据用）。不参与实盘/dry-run，任何正在跑的实例都不读这个文件。",
+    "max_open_trades": 1,
+    "stake_currency": "USDT",
+    "stake_amount": 0.001,
+    "dry_run": true,
+    "dry_run_wallet": 1000,
+    "cancel_open_orders_on_exit": true,
+    "timeframe": "1h",
+    "trading_mode": "spot",
+    "margin_mode": "",
+    "exchange": {
+        "name": "binance",
+        "key": "",
+        "secret": "",
+        "ccxt_config": {
+            "//": "出海走 ssh 动态转发：先 `ssh -fN quant-proxy`，本机 1080 就是 socks5。",
+            "enableRateLimit": true,
+            "socksProxy": "socks5h://127.0.0.1:1080"
+        },
+        "ccxt_async_config": {
+            "enableRateLimit": true,
+            "socksProxy": "socks5h://127.0.0.1:1080"
+        },
+        "pair_whitelist": [
+            "BTC/USDT"
+        ],
+        "skip_pair_validation": true
+    },
+    "entry_pricing": {
+        "price_side": "other",
+        "use_order_book": true,
+        "order_book_top": 1
+    },
+    "exit_pricing": {
+        "price_side": "other",
+        "use_order_book": true,
+        "order_book_top": 1
+    },
+    "pairlists": [
+        {
+            "method": "StaticPairList"
+        }
+    ],
+    "dataformat_ohlcv": "feather",
+    "dataformat_trades": "feather"
+}
