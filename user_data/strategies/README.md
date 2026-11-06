@@ -24,15 +24,12 @@
 | --- | --- | --- |
 | `TurtleBreakout.py` | 海龟突破，实盘演示实例之一 | 在跑（dry-run） |
 | `GridMartingale.py` | 网格马丁，实盘演示实例之一；含 `GridMartingaleNoFilter` 对照子类 | 在跑（dry-run） |
-| `hlhb.py` | 策略池来源，作为基准保留 | 只读参考 |
-| `Supertrend.py` | 策略池来源，作为基准保留 | 只读参考；已做 numpy2/pandas3 兼容修复（原版在新版本下**不报错但指标内核静默失效**，全文注释在文件里） |
-| `Ema21TwoTfAtr.py` | 伦敦金 1m/5m EMA21 双周期实验策略 | **研究结论：否定**，见 `开发执行记录.md` 第九轮 |
-| `Ema21TwoTfAtrVariants.py` | 上面那个的 6 个单变量对照子类 | 同上一行，变体表跑前封闭 |
 | `XsecMomentum.py` | 横截面动量多空，日频，需要多 pair 全市场排名 | 研究已结题，这是落地版；**没在跑** |
 
-> `Ema21TwoTfAtr*` 是**否定结论**的实验代码，留着是为了可复现和记录，**不要拿去实盘**。
-> 摘要：28 组回测（7 变体 × 4 档成本）里没有一组在伦敦金真实点差下为正；
-> 单笔毛优势 0.035R 对单笔往返成本 0.030R，优势约等于成本。
+> 2026-11-05 清理：`hlhb.py`、`Supertrend.py`、`Ema21TwoTfAtr.py`、
+> `Ema21TwoTfAtrVariants.py` 以及配套的 `config_xau_1m.json`、`config_btceth_1m.json`
+> 已从工作区删除。结论仍然有效（见 `开发执行记录.md` 第九轮，
+> 伦敦金 EMA21 双周期 28 组回测全部为负），需要复现代码时从 git 历史里取。
 
 ---
 

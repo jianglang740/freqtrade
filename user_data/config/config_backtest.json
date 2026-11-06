@@ -1,7 +1,7 @@
 {
     "$schema": "https://schema.freqtrade.io/schema.json",
     "//": "专门用来跑回测的 config。与 config_grid_1h.json / config_turtle_4h.json 无关，那两个是给正在跑的 dry-run 实例用的。",
-    "//trading_mode": "hlhb 用 4h、Supertrend 用 1h，这两个周期只有 futures 数据目录下有，所以必须走合约模式读数据。",
+    "//trading_mode": "回测覆盖 1h/4h 周期（含 XAU），这些数据只在 futures 目录下，所以必须走合约模式读数据。",
     "max_open_trades": 3,
     "stake_currency": "USDT",
     "stake_amount": 1000,
