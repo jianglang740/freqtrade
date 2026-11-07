@@ -209,10 +209,18 @@ price_data.parquet
 crypto_price_data_说明.md
 user_data/config/config_spot_research.json
 
-# 面板数据的 parquet 是派生品（面板数据/build_panel.py 几秒即可重建），
-# 体积上百 MB，不进仓库；脚本和 manifest 照常提交
-面板数据/*.parquet
-# 归档抓取的单币缓存（fetch_spot_all.py 生成，删掉会重新下载）
-面板数据/.cache_bv/
+# 因子研究/行情数据/ 里只有**数据本体**不进仓库；_build/ 脚本、lake_io.py、
+# README.md、_manifest.json、_audit.json 照常提交（都只有几十 KB，重建要几十分钟）
+因子研究/行情数据/spot/
+因子研究/行情数据/um/
+因子研究/行情数据/basic/
+因子研究/行情数据/.cache_bv/
+因子研究/行情数据/.tmp/
+
+# 因子面板是行情数据湖的派生物，可复算（build_factors.py 几十秒到几分钟）；
+# 回测产物 out/ 更是每次跑都不一样。两者都只留脚本。
+因子研究/因子数据/panels/
+# 每个研究项目的 out/ 同理：只提交脚本、计划与结论
+因子研究/*/out/
 
 freqdroid/

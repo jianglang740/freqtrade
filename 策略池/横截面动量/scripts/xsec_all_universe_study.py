@@ -26,13 +26,17 @@ import pandas as pd
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from xsec_momentum_study import (  # noqa: E402
-    ADV_MIN, FEE, Q, PANEL, ROOT, TOP_N, build_scores, load_funding, metrics,
+    ADV_MIN, FEE, LAKE, Q, ROOT, TOP_N, build_scores, load_funding, metrics,
 )
+
+sys.path.insert(0, LAKE)          # lake_io.py 在数据湖根目录
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 OUT = os.path.join(os.path.dirname(HERE), "out")   # 策略池/横截面动量/out
-ALL = os.path.join(PANEL, "spot_all_1d.parquet")
-OLD = os.path.join(PANEL, "spot_1d.parquet")
+# 2026-11 数据湖上线：原来的 panel 单文件已删除，改成从 lake_io 读。
+# None = 从数据湖取；保留路径参数是为了兼容旧的调用方式。
+ALL = None
+OLD = None
 COLS = ("方案", "年化", "波动", "Sharpe", "最大回撤", "Calmar", "月度胜率")
 
 
@@ -48,14 +52,27 @@ def show_(rows: list[dict]) -> pd.DataFrame:
 
 
 # ────────────────────────────────────────────── 数据
-def load_wide(path: str):
+def legacy_pairs() -> set[str]:
+    """原 100 对面板的符号，从仍留在 user_data/data/binance 的 feather 反查。"""
+    d = os.path.join(ROOT, "user_data", "data", "binance")
+    tag = "_USDT-1d.feather"
+    return {f[: -len(tag)] + "/USDT" for f in os.listdir(d) if f.endswith(tag)}
+
+
+def load_wide(path: str | None, symbols: set[str] | None = None):
     """长表 → 宽表，并把「上市到退市」这段之外的价格全部抹成 NaN。
 
     归档里 `volume == 0` 的日期已经被抓取脚本丢掉，所以会留下缺口；
     对缺口做前向填充（停牌期间按最后价计），但**退市之后不填**，
     否则一个死币会以最后价格永久留在截面里。
     """
-    df = pd.read_parquet(path)
+    if path is None:                                   # 数据湖
+        from lake_io import load_panel
+        df = load_panel("1d", "spot")
+        if symbols:
+            df = df[df["pair"].isin(symbols)]
+    else:
+        df = pd.read_parquet(path)
     df["date"] = pd.to_datetime(df["date"], utc=True)
     close = df.pivot(index="date", columns="pair", values="close").sort_index()
     qv = df.pivot(index="date", columns="pair", values="quote_volume").sort_index()
@@ -130,8 +147,13 @@ def run(score, ret, funding=None, lev=1.0, fee=FEE, q=Q, dead_shock=0.0,
 
 
 def main() -> None:
-    if not os.path.exists(ALL):
-        print(f"缺 {os.path.relpath(ALL, ROOT)}，先跑 面板数据/fetch_spot_all.py")
+    try:
+        from lake_io import available
+        if not available("spot", "1d"):
+            print("数据湖 spot/1d 还没建：先跑 因子研究/行情数据/_build/01_fetch_bv.py 与 02_partition.py")
+            return
+    except Exception as e:                              # noqa: BLE001
+        print(f"读数据湖失败：{e}")
         return
 
     close, qv, alive, last = load_wide(ALL)
@@ -156,7 +178,7 @@ def main() -> None:
     print(f"资金费覆盖：{fund_cov} / {close.shape[1]} 个币（其余按 0 计，偏乐观）")
 
     # ── 三个嵌套的池子：把「事后选池」拆成两道筛选
-    old_cols = set(pd.read_parquet(OLD, columns=["pair"])["pair"].unique())
+    old_cols = legacy_pairs()
     alive_cols = list(last[last >= close.index.max() - pd.Timedelta(days=30)].index)
     pick100 = [c for c in close.columns if c in old_cols]
     print(f"\n三个嵌套池子：全历史 {close.shape[1]} ⊃ 仍活着 {len(alive_cols)} ⊃ "

@@ -26,27 +26,28 @@ import pandas as pd
 
 
 def find_root(start: str = __file__) -> str:
-    """向上找同时含 `面板数据/` 与 `user_data/` 的目录。
+    """向上找同时含 `因子研究/` 与 `user_data/` 的目录。
 
-    脚本从 面板数据/ 搬到了 策略池/横截面动量/scripts/，写死 `dirname(dirname(__file__))`
+    脚本从 因子研究/ 搬到了 策略池/横截面动量/scripts/，写死 `dirname(dirname(__file__))`
     会指错；按目录标记找根，以后整体挪窝也不用改。
     """
     p = os.path.dirname(os.path.abspath(start))
     while True:
-        if os.path.isdir(os.path.join(p, "面板数据")) and os.path.isdir(os.path.join(p, "user_data")):
+        if os.path.isdir(os.path.join(p, "因子研究")) and os.path.isdir(os.path.join(p, "user_data")):
             return p
         parent = os.path.dirname(p)
         if parent == p:
-            raise RuntimeError("找不到项目根目录（应同时含 面板数据/ 与 user_data/）")
+            raise RuntimeError("找不到项目根目录（应同时含 因子研究/ 与 user_data/）")
         p = parent
 
 
 ROOT = find_root()
-PANEL = os.path.join(ROOT, "面板数据")
+# 数据湖现在整体收在 因子研究/行情数据/ 里，lake_io.py 就在那一层。
+LAKE = os.path.join(ROOT, "因子研究", "行情数据")
 OUT = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "out")
 
-sys.path.insert(0, PANEL)
-from panel_io import load_panel  # noqa: E402
+sys.path.insert(0, LAKE)
+from lake_io import load_panel  # noqa: E402
 
 DATA = os.path.join(ROOT, "user_data", "data", "binance")
 FDIR = os.path.join(DATA, "futures")

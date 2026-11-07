@@ -14,8 +14,8 @@
 用法：
     ssh -fN quant-proxy     # 出境要走 socks（见 mac-proxy-ssh-tunnel）
     source /opt/anaconda3/etc/profile.d/conda.sh && conda activate freqtrade
-    python 面板数据/tradfi_probe.py                 # 只写 csv
-    python 面板数据/tradfi_probe.py --markdown      # 连报告一起重写
+    python 因子研究/tradfi_probe.py                 # 只写 csv
+    python 因子研究/tradfi_probe.py --markdown      # 连报告一起重写
 
 ⚠️ 分类不要自己猜：交易所的 `underlyingType` 字段直接给了类别，
    `underlyingSubType` 里统一带 `"TradFi"` 标记。
@@ -401,7 +401,7 @@ def write_markdown(rows: list[dict]) -> None:
     today = dt.date.today().isoformat()
 
     L = [f"# Binance TradFi 合约清单\n",
-         f"> 探测日期 {today}。由 `面板数据/tradfi_probe.py --markdown` 生成，可重跑。"
+         f"> 探测日期 {today}。由 `因子研究/tradfi_probe.py --markdown` 生成，可重跑。"
          f"来源：`fapi.binance.com/fapi/v1/exchangeInfo` + `data.binance.vision` 归档目录扫描。"
          f"**只读元数据，未下载任何 K 线。**\n",
          "---\n\n## 结论速览\n",

@@ -70,7 +70,7 @@ out/                脚本产出的 csv 明细（派生物，不进 git，重跑
 不是 freqtrade 策略。落地版是 [`user_data/strategies/XsecMomentum.py`](../../user_data/strategies/XsecMomentum.py)，
 说明见 [06_交付策略.md](06_交付策略.md)。
 
-数据与数据工具在 [`面板数据/`](../../面板数据/)，这里只读不写。
+数据与数据工具在 [`因子研究/行情数据/`](../../因子研究/行情数据/README.md)，这里只读不写。
 
 ## 复现
 
@@ -80,7 +80,7 @@ source /opt/anaconda3/etc/profile.d/conda.sh && conda activate freqtrade
 # 第 0 步：调仓频率 / 信号衰减 / 伪时点币池 / 单币止损
 python 策略池/横截面动量/scripts/xsec_step0_study.py
 
-# 第 1 步：全历史币池（需先有 面板数据/spot_all_1d.parquet）
+# 第 1 步：全历史币池（直接从数据湖读，无需前置文件）
 python 策略池/横截面动量/scripts/xsec_all_universe_study.py
 
 # 第 2 步：池子形状 / 波动率 / 容量
