@@ -148,6 +148,23 @@ def build_rebalances(bar_dates: pd.DatetimeIndex, rebalance: str, every: int = 1
     return pd.DatetimeIndex(s.groupby(key).last().sort_values())
 
 
+def _warmup_start(cfg: Config) -> str | None:
+    """股票池 / 风格因子的日线预热起点：比 `start` 再往前读一段。
+
+    不预热的话，`--start 2024-01-01` 那天所有符号的「首根日线」都恰好是 2024-01-01，
+    于是 `min_history_days` 会把**前 30 个交易日的池子整个清空**；Beta / 波动率
+    的滚动窗口也没有历史，头两周全是 NaN。这是个静默失真：结果不会报错，
+    只是样本开头悄悄少了一截。
+    """
+    if cfg.start is None:
+        return None
+    buf = max(cfg.adv_lookback, cfg.beta_window, cfg.vol_window, cfg.min_history_days) + 5
+    t = pd.Timestamp(cfg.start)
+    if t.tz is None:
+        t = t.tz_localize("UTC")
+    return str((t - pd.Timedelta(days=buf)).date())
+
+
 def build_universe(cfg: Config, reb_dates: pd.DatetimeIndex) -> pd.DataFrame:
     """date × symbol 布尔表：点时股票池。
 
@@ -160,7 +177,7 @@ def build_universe(cfg: Config, reb_dates: pd.DatetimeIndex) -> pd.DataFrame:
     """
     lb = cfg.adv_lookback
     daily = lake_io.load(cfg.market, "1d", columns=["symbol", "date", "quote_volume"],
-                         start=cfg.start, end=cfg.end)
+                         start=_warmup_start(cfg), end=cfg.end)
     if daily.empty:
         raise RuntimeError("日线为空，无法建股票池")
     qv = _pivot(daily, "quote_volume").astype("float64")
@@ -242,7 +259,7 @@ def build_style(cfg: Config, reb_dates: pd.DatetimeIndex, columns: pd.Index) -> 
     币圈版本没有「行业」，共同风险主要是 Beta（所有币跟 BTC 同涨同跌）。
     """
     daily = lake_io.load(cfg.market, "1d", columns=["symbol", "date", "close", "quote_volume"],
-                         start=cfg.start, end=cfg.end)
+                         start=_warmup_start(cfg), end=cfg.end)
     close = _pivot(daily, "close").astype("float64")
     qv = _pivot(daily, "quote_volume").astype("float64")
     ret = close.pct_change(fill_method=None)
