@@ -9,7 +9,7 @@
     "fiat_display_currency": "",
     "dry_run": true,
     "timeframe": "1d",
-    "dry_run_wallet": 10000,
+    "dry_run_wallet": 1000,
     "cancel_open_orders_on_exit": true,
     "unfilledtimeout": {
         "entry": 10,
