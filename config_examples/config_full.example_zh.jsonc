@@ -52,7 +52,7 @@
     // 强烈建议先在 dry_run=true 下充分测试！
     "dry_run": true,
 
-    // 模拟模式下的初始钱包余额（单位=stake_currency）
+    // 模拟模式下的初始钱包余额（单位=stake_currency）（也是回测时的账户初始余额）
     "dry_run_wallet": 1000,
 
     // 退出时是否取消所有未成交的挂单
