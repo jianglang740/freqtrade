@@ -1,0 +1,10 @@
+node_modules/
+dist/
+
+# 后端运行期产物与本地密钥
+server/data/
+server/.env
+
+# 内容目录：Markdown 与图片要提交，只忽略写入过程的临时文件与系统垃圾
+server/content/**/*.tmp
+server/content/**/.DS_Store

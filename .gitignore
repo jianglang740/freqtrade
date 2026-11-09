@@ -224,3 +224,6 @@ user_data/config/config_spot_research.json
 因子研究/*/out/
 
 freqdroid/
+
+# 旧版 FreqHub 已删除；如重新克隆这个第三方项目试跑，仍不纳入本仓库
+FreqHub/
