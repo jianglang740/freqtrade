@@ -120,6 +120,20 @@ class TurtleBreakout(IStrategy):
     exit_profit_only = False
     ignore_roi_if_entry_signal = False
 
+    # ── 图表配置（只影响 App/网页画图，不参与交易逻辑）──
+    # App 的「图表配置 → 从策略加载」读的就是这段。
+    plot_config = {
+        "main_plot": {
+            "dc_up20": {"color": "green"},
+            "dc_up10": {"color": "teal"},
+            "dc_dn10": {"color": "orange"},
+            "dc_dn20": {"color": "red"},
+        },
+        "subplots": {
+            "ATR": {"atr": {"color": "yellow"}},
+        },
+    }
+
     # ── 加仓开关 ──
     position_adjustment_enable = True
     max_entry_position_adjustment = max_units - 1   # 首单算 1 个，所以这里是 3

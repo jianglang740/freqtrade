@@ -6,9 +6,15 @@
 import { Link } from 'react-router-dom';
 import { listFactors } from '../lib/content';
 import { useAsync } from '../lib/useAsync';
+import { usePageMeta } from '../lib/pageMeta';
 
 export function Factors() {
   const { data, loading, error, reload } = useAsync(listFactors, []);
+  usePageMeta({
+    title: '因子库',
+    description:
+      '团队产出的择时与横截面选币因子：定义、公式、怎么用与限制，公开分享供学习参考。',
+  });
 
   return (
     <section className="wrap section">

@@ -7,6 +7,7 @@
 
 import { useEffect, useState } from 'react';
 import { AdminGate } from '../components/AdminGate';
+import { usePageMeta } from '../lib/pageMeta';
 import { UserBotsModal } from '../components/UserBotsModal';
 import type { SiteUser } from '../lib/api';
 import {
@@ -44,6 +45,7 @@ function statusOf(u: AdminUser): { text: string; color: string } {
 }
 
 export function AdminUsers() {
+  usePageMeta({ title: '用户管理', noindex: true });
   return (
     <AdminGate
       kicker="FREQ / 用户管理"

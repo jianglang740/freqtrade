@@ -7,6 +7,7 @@ import type { CSSProperties } from 'react';
 import { site, whoWeAre } from '../content/site';
 import { useContact } from '../components/ContactModal';
 import { RobotMark } from '../components/RobotMark';
+import { usePageMeta } from '../lib/pageMeta';
 
 /** 从「工作原理」右下角弯出去，指向右侧那段说明 */
 function HowArrow() {
@@ -134,6 +135,7 @@ function ChipRow({
 
 export function Home() {
   const contact = useContact();
+  usePageMeta();
 
   return (
     <>

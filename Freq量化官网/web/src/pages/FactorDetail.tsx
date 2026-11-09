@@ -3,12 +3,11 @@
  * 底部那句「因子本身不产生收益」对所有因子都成立，留在页面里。
  */
 
-import { useEffect } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { site } from '../content/site';
 import { ArticleMarkdown } from '../components/ArticleMarkdown';
 import { getFactor } from '../lib/content';
 import { useAsync } from '../lib/useAsync';
+import { usePageMeta } from '../lib/pageMeta';
 
 export function FactorDetail() {
   const { slug } = useParams<{ slug: string }>();
@@ -16,14 +15,7 @@ export function FactorDetail() {
 
   const meta = data?.meta;
 
-  useEffect(() => {
-    if (!meta) return;
-    const prev = document.title;
-    document.title = `${meta.name} · ${site.name}`;
-    return () => {
-      document.title = prev;
-    };
-  }, [meta]);
+  usePageMeta({ title: meta?.name, description: meta?.oneLine });
 
   if (loading) {
     return (

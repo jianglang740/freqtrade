@@ -10,9 +10,15 @@ import { site } from '../content/site';
 import { EquityCurve } from '../components/EquityCurve';
 import { listStrategies } from '../lib/content';
 import { useAsync } from '../lib/useAsync';
+import { usePageMeta } from '../lib/pageMeta';
 
 export function Strategies() {
   const { data, loading, error, reload } = useAsync(listStrategies, []);
+  usePageMeta({
+    title: '策略',
+    description:
+      '经过研究、回测与模拟盘验证的加密量化策略，查看收益率、回撤与净值曲线，按订阅获取。',
+  });
 
   return (
     <section className="wrap section">

@@ -15,6 +15,7 @@ import { botsRouter } from './routes/bots.js';
 import { proxyRouter } from './routes/proxy.js';
 import { contentRouter } from './routes/content.js';
 import { usersRouter } from './routes/users.js';
+import { seoRouter } from './routes/seo.js';
 
 export const app = express();
 
@@ -80,6 +81,9 @@ app.use('/api/bots', proxyRouter);
 app.use('/api/users', usersRouter);
 app.use('/api', contentRouter);
 app.use('/api', apiNotFound);
+
+// SEO 文件必须在静态托管之前：它们要按请求域名动态生成
+app.use(seoRouter);
 
 // 生产模式：同一个进程托管前端构建产物，未命中的非 /api 路径回落到 index.html
 if (existsSync(path.join(env.STATIC_DIR, 'index.html'))) {

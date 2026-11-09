@@ -405,11 +405,11 @@ cp .env "backup/env-$(date +%F).bak"
 
 ## 改内容只看这几个地方
 
-| 想改什么                       | 改哪里                                                                     |
-| ------------------------------ | -------------------------------------------------------------------------- |
+| 想改什么                       | 改哪里                                                                         |
+| ------------------------------ | ------------------------------------------------------------------------------ |
 | 策略、因子正文与卡片数据       | `/admin` 网页编辑器，或直接编辑 `server/content/{strategies,factors}/*.md` |
-| 首页「已有 xx 位用户」         | `src/content/site.ts` 的 `userCount`（改完要 `npm run build`）              |
-| 站名、价格、联系方式、关于我们 | `src/content/site.ts`                                                      |
+| 首页「已有 xx 位用户」         | `src/content/site.ts` 的 `userCount`（改完要 `npm run build`）           |
+| 站名、价格、联系方式、关于我们 | `src/content/site.ts`                                                        |
 | 颜色、字号、间距               | `src/styles/site.css` 顶部的 `:root` 变量                                  |
 
 `userCount` 设为 `null` 时整行不显示；填数字后重新构建前端即可。
@@ -704,6 +704,12 @@ server {
   以及 `server/content/`（策略 / 因子 Markdown 与图片）。
 - 换 `ENCRYPTION_KEY` 需要把 `bots.encrypted_password` 全部重新加密，当前没有在线轮换脚本，
   换密钥前先停服并备份。
+
+### SEO（站点地图 / 分享卡片）
+
+- `/robots.txt` 与 `/sitemap.xml` 由后端按请求域名动态生成（`server/src/routes/seo.ts`），策略 / 因子新增后自动出现，不用手工维护；`/robots`、`/admin`、`/api/` 对爬虫关闭。
+- 分享卡片是 `web/public/og.png`。微信等抓取方要求绝对地址，正式构建时带上域名：
+  `SITE_URL=https://你的域名 npm run build`（不传也能构建，只是分享图是相对路径）。
 
 ### 对路径的依赖
 

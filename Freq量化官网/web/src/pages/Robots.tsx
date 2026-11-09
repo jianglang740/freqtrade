@@ -7,6 +7,7 @@
 
 import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
+import { usePageMeta } from '../lib/pageMeta';
 import {
   botGet,
   createBot,
@@ -1381,6 +1382,12 @@ function Balance({ botId, tick }: { botId: string; tick: number }) {
 /* ───────────────────────── 控制台外壳 ───────────────────────── */
 
 export function Robots() {
+  // 登录后的仪表盘，不该被搜索引擎收录
+  usePageMeta({
+    title: '我的机器人',
+    description: '登录后查看自己名下机器人的运行状态、持仓与交易记录。',
+    noindex: true,
+  });
   const [user, setUser] = useState<SiteUser | null>(() => getUser());
   const [bots, setBots] = useState<Bot[] | null>(null);
   const [botsErr, setBotsErr] = useState<string | null>(null);

@@ -8,6 +8,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { AdminGate } from '../components/AdminGate';
+import { usePageMeta } from '../lib/pageMeta';
 import { ArticleMarkdown } from '../components/ArticleMarkdown';
 import type { SiteUser } from '../lib/api';
 import {
@@ -101,6 +102,7 @@ function slugFromFilename(name: string): string {
 }
 
 export function Admin() {
+  usePageMeta({ title: '内容管理', noindex: true });
   return (
     <AdminGate
       kicker="FREQ / 内容管理"

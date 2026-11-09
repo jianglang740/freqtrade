@@ -38,7 +38,7 @@ export function ContactProvider({ children }: { children: ReactNode }) {
       {visible && (
         <div className="modal-backdrop" onClick={close} role="presentation">
           <div
-            className="modal"
+            className="modal modal--brick"
             role="dialog"
             aria-modal="true"
             aria-label="获取联系方式"

@@ -3,7 +3,6 @@
  * slug 对不上时给出回到列表的出口。
  */
 
-import { useEffect } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { site } from '../content/site';
 import { EquityCurve } from '../components/EquityCurve';
@@ -11,6 +10,7 @@ import { ArticleMarkdown } from '../components/ArticleMarkdown';
 import { useContact } from '../components/ContactModal';
 import { getStrategy } from '../lib/content';
 import { useAsync } from '../lib/useAsync';
+import { usePageMeta } from '../lib/pageMeta';
 
 export function StrategyDetail() {
   const { slug } = useParams<{ slug: string }>();
@@ -22,14 +22,7 @@ export function StrategyDetail() {
 
   const meta = data?.meta;
 
-  useEffect(() => {
-    if (!meta) return;
-    const prev = document.title;
-    document.title = `${meta.name} · ${site.name}`;
-    return () => {
-      document.title = prev;
-    };
-  }, [meta]);
+  usePageMeta({ title: meta?.name, description: meta?.desc });
 
   if (loading) {
     return (
