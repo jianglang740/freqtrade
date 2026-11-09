@@ -65,7 +65,7 @@ export function FactorDetail() {
 
   return (
     <section className="wrap">
-      <div className="article">
+      <div className="article article--board">
         <Link to="/factors" className="small muted">
           ← 因子库
         </Link>

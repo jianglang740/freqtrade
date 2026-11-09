@@ -18,6 +18,8 @@
   --rh-lav: #b9a7e8;
   --rh-lav-dim: #a08fd4;
   --rh-text: #e8e0ff;
+  /* 乳白：文章正文的阅读色。比淡紫更亮、更暖，长时间读不累 */
+  --rh-milk: #f7f3ea;
   --rh-mint: #7ee2b8;
 
   --rh-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
@@ -412,6 +414,54 @@ a {
   max-width: 19.6em;
 }
 
+/*
+ * 主视觉底部的小徽标：「已有 xx 位用户」，压在 Powered by CCXT 上方。
+ * hero-foot 是居中的，所以这里只要 inline-flex，水平方向自动居中。
+ */
+.hero-proof {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: clamp(12px, 1.8vh, 20px);
+  padding: 8px 14px;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  border-radius: 999px;
+  background:
+    radial-gradient(
+      120% 130% at 0% 0%,
+      rgba(255, 255, 255, 0.28) 0%,
+      rgba(255, 255, 255, 0.07) 42%,
+      transparent 72%
+    ),
+    linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.03));
+  box-shadow:
+    inset 1px 1px 0 rgba(255, 255, 255, 0.4),
+    inset -1px -1px 0 rgba(255, 255, 255, 0.06),
+    0 8px 24px rgba(0, 0, 0, 0.3);
+  -webkit-backdrop-filter: blur(20px) saturate(160%);
+  backdrop-filter: blur(20px) saturate(160%);
+  color: var(--rh-lav);
+  font-size: clamp(12px, 1vw, 14px);
+  letter-spacing: 0.12em;
+  white-space: nowrap;
+}
+
+.hero-proof strong {
+  color: var(--rh-gold);
+  font-size: 1.45em;
+  line-height: 1;
+}
+
+.hero-proof__dot {
+  align-self: center;
+  flex: none;
+  width: 8px;
+  height: 8px;
+  background: var(--rh-mint);
+  box-shadow: 0 0 8px var(--rh-mint);
+  animation: rh-blink 1.6s steps(2, end) infinite;
+}
+
 .hero-foot {
   margin-top: auto;
   padding-top: clamp(40px, 10vh, 120px);
@@ -519,14 +569,38 @@ a {
   margin-top: clamp(40px, 6vh, 76px);
 }
 
+/*
+ * 流程图方框也做成「砖框 + 棕色底板」，和策略卡片、详情页同一套语言。
+ * 方框本身铺砖，::before 缩进一圈铺棕色底板，内容浮在底板上面。
+ */
 .how-node {
+  --brick-tone: #7a4424;
+  --brick-edge: #2a1608;
+  --node-frame: 8px;
+
+  position: relative;
+  isolation: isolate;
   display: flex;
   flex-direction: column;
   gap: 12px;
-  padding: clamp(16px, 1.8vw, 24px);
-  border: 2px solid var(--rh-line);
-  background: rgba(22, 13, 40, 0.94);
-  box-shadow: 4px 4px rgba(6, 4, 16, 0.6);
+  padding: calc(var(--node-frame) + clamp(14px, 1.6vw, 20px));
+  border: 0;
+  background-color: var(--brick-tone);
+  background-image: var(--brick-tile);
+  background-size: 80px 25.6px;
+  box-shadow: inset 0 0 0 2px var(--brick-edge);
+  clip-path: var(--pixel-frame);
+}
+
+.how-node::before {
+  content: '';
+  position: absolute;
+  inset: var(--node-frame);
+  z-index: -1;
+  background-color: #3b2416;
+  background-image: radial-gradient(rgba(255, 235, 210, 0.045) 1px, transparent 1px);
+  background-size: 4px 4px;
+  box-shadow: 0 0 0 2px #241206;
 }
 
 .how-node__title {
@@ -542,9 +616,9 @@ a {
   align-self: center;
   margin-top: auto;
   padding: clamp(10px, 1vw, 14px) clamp(28px, 2.6vw, 48px);
-  border: 2px solid var(--rh-line);
-  background: rgba(36, 21, 72, 0.9);
-  color: var(--rh-lav);
+  border: 2px solid var(--rh-gold);
+  background: rgba(32, 17, 7, 0.55);
+  color: var(--rh-cream);
   font-size: clamp(14px, 1.1vw, 17px);
   letter-spacing: 0.16em;
 }
@@ -557,16 +631,16 @@ a {
 
 .how-sub {
   padding: 12px 14px;
-  border: 2px solid var(--rh-line-soft);
-  background: rgba(11, 8, 25, 0.6);
-  color: var(--rh-lav);
+  border: 2px solid rgba(255, 235, 210, 0.18);
+  background: rgba(28, 14, 6, 0.45);
+  color: var(--rh-milk);
   font-size: clamp(12px, 0.95vw, 13.5px);
   line-height: 1.8;
 }
 
 .how-node--dash p {
   margin: 0;
-  color: var(--rh-lav);
+  color: var(--rh-milk);
   font-size: clamp(12.5px, 1vw, 14px);
   line-height: 1.9;
 }
@@ -865,23 +939,58 @@ a {
   margin-top: clamp(28px, 5vh, 52px);
 }
 
+/*
+ * 卡片做成详情页那块「砖框包棕色底板」的小号版本，同一套像素素材。
+ * 卡片本身是砖墙，::before 缩进一圈铺棕色底板，内容浮在底板上面。
+ */
+.strategy-card,
+.factor-card {
+  --brick-tone: #7a4424;
+  --brick-edge: #2a1608;
+  --card-frame: 8px;
+
+  position: relative;
+  isolation: isolate;
+  border: 0;
+  background-color: var(--brick-tone);
+  background-image: var(--brick-tile);
+  background-size: 80px 25.6px;
+  box-shadow: inset 0 0 0 2px var(--brick-edge);
+  clip-path: var(--pixel-frame);
+  transition:
+    transform 0.1s steps(2, end),
+    background-color 0.1s steps(2, end);
+}
+
 .strategy-card {
   display: grid;
   grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
   min-height: 210px;
-  border: 2px solid var(--rh-line);
-  background: rgba(22, 13, 40, 0.94);
-  box-shadow: 5px 5px rgba(6, 4, 16, 0.6);
-  transition:
-    transform 0.1s steps(2, end),
-    border-color 0.1s steps(2, end),
-    box-shadow 0.1s steps(2, end);
+  padding: var(--card-frame);
 }
 
-.strategy-card:hover {
-  transform: translate(-3px, -3px);
-  border-color: var(--rh-cream);
-  box-shadow: 8px 8px rgba(6, 4, 16, 0.6);
+/* 因子卡片内部没有两栏结构，内边距自己留 */
+.factor-card {
+  padding: calc(var(--card-frame) + 18px) calc(var(--card-frame) + 22px);
+}
+
+.strategy-card::before,
+.factor-card::before {
+  content: '';
+  position: absolute;
+  inset: var(--card-frame);
+  z-index: -1;
+  background-color: #3b2416;
+  background-image: radial-gradient(rgba(255, 235, 210, 0.045) 1px, transparent 1px);
+  background-size: 4px 4px;
+  box-shadow: 0 0 0 2px #241206;
+}
+
+/* 悬停时砖色提亮一档，和首页标签、侧栏按钮同一种反馈 */
+.strategy-card:hover,
+.factor-card:hover {
+  --brick-tone: #a25a2d;
+  transform: translate(-2px, -2px);
 }
 
 .strategy-card__body {
@@ -889,7 +998,7 @@ a {
   flex-direction: column;
   gap: 12px;
   padding: 20px 22px;
-  border-right: 2px solid var(--rh-line);
+  border-right: 2px solid rgba(255, 235, 210, 0.16);
 }
 
 .strategy-card__title {
@@ -902,7 +1011,7 @@ a {
 
 .strategy-card__desc {
   margin: 0;
-  color: var(--rh-lav);
+  color: var(--rh-milk);
   font-size: 13px;
   line-height: 1.85;
 }
@@ -912,9 +1021,15 @@ a {
   display: flex;
   flex-wrap: wrap;
   gap: 6px 16px;
-  color: var(--rh-lav-dim);
+  color: rgba(247, 243, 234, 0.62);
   font-size: 11px;
   letter-spacing: 0.08em;
+}
+
+/* 卡片第一行的英文名 / 状态，棕色底上用暖灰比紫色清楚 */
+.strategy-card .metric-label,
+.factor-card .metric-label {
+  color: rgba(247, 243, 234, 0.62);
 }
 
 .strategy-card__chart {
@@ -1046,18 +1161,20 @@ a {
   border-color: var(--rh-cream);
 }
 
-/* 因子卡片整块可点，悬停时和策略卡片一样「抬起来」 */
+/*
+ * 因子卡片（.card.factor-card）复用「砖框 + 棕色底板」。
+ * 这段必须放在 .card 之后，用来盖掉 .card 自带的深紫底、边框和内边距。
+ */
 .factor-card {
-  transition:
-    transform 0.1s steps(2, end),
-    border-color 0.1s steps(2, end),
-    box-shadow 0.1s steps(2, end);
-}
-
-.factor-card:hover {
-  transform: translate(-3px, -3px);
-  border-color: var(--rh-cream);
-  box-shadow: 8px 8px rgba(6, 4, 16, 0.6);
+  position: relative;
+  isolation: isolate;
+  padding: calc(var(--card-frame) + 18px) calc(var(--card-frame) + 22px);
+  border: 0;
+  background-color: var(--brick-tone);
+  background-image: var(--brick-tile);
+  background-size: 80px 25.6px;
+  box-shadow: inset 0 0 0 2px var(--brick-edge);
+  clip-path: var(--pixel-frame);
 }
 
 .factor-card:hover .strategy-card__title {
@@ -1254,6 +1371,45 @@ a {
   padding: clamp(28px, 5vh, 64px) 0 80px;
 }
 
+/*
+ * 策略 / 因子详情页：整篇内容放在一块棕色底板上，底板外面再包一圈像素砖墙。
+ * 砖墙直接复用站点的 --brick-tile 贴图（不含草坪），砖色靠 --brick-tone 透出来，
+ * 四角沿用 --pixel-frame 的像素阶梯裁切，和侧栏按钮、首页标签同一套语言。
+ * 宽度 = 正文栏 78ch + 内边距 + 砖墙厚度，只比正文宽一圈，不铺满页面。
+ */
+.article--board {
+  --brick-tone: #7a4424;
+  --brick-edge: #2a1608;
+  --board-frame: clamp(12px, 1.6vw, 20px);
+
+  position: relative;
+  isolation: isolate;
+  max-width: calc(78ch + 2 * var(--board-frame) + clamp(44px, 6.4vw, 100px));
+  padding:
+    calc(var(--board-frame) + clamp(22px, 3vh, 40px))
+    calc(var(--board-frame) + clamp(22px, 3.2vw, 50px))
+    calc(var(--board-frame) + clamp(32px, 5vh, 60px));
+  background-color: var(--brick-tone);
+  background-image: var(--brick-tile);
+  background-size: 80px 25.6px;
+  box-shadow: inset 0 0 0 2px var(--brick-edge);
+  clip-path: var(--pixel-frame);
+}
+
+/* 棕色底板：inset 正好让出砖墙厚度，内容浮在底板上面 */
+.article--board::before {
+  content: '';
+  position: absolute;
+  inset: var(--board-frame);
+  z-index: -1;
+  background-color: #3b2416;
+  background-image: radial-gradient(rgba(255, 235, 210, 0.045) 1px, transparent 1px);
+  background-size: 4px 4px;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 235, 210, 0.08),
+    0 0 0 2px #241206;
+}
+
 .article h1 {
   margin: 0 0 10px;
   color: var(--rh-cream);
@@ -1271,12 +1427,12 @@ a {
 }
 
 .article p {
-  color: var(--rh-lav);
+  color: var(--rh-milk);
   line-height: 1.95;
 }
 
 .article ul {
-  color: var(--rh-lav);
+  color: var(--rh-milk);
   line-height: 1.95;
   padding-left: 20px;
 }
@@ -1304,7 +1460,7 @@ a {
 .article ol {
   margin: 0 0 16px;
   padding-left: 22px;
-  color: var(--rh-lav);
+  color: var(--rh-milk);
   line-height: 1.95;
 }
 
@@ -1432,6 +1588,29 @@ a {
 
 .data-table tbody tr:last-child td {
   border-bottom: 0;
+}
+
+/*
+ * 策略详情页里的绩效表：背景本身是深紫底纹，紫色线几乎融进去看不清，
+ * 改用淡蓝分隔线，跟深色底纹形成明显的明暗差，表格骨架一眼能分清。
+ * 只作用于文章区，后台管理页的表格保持原样。
+ */
+.article .table-wrap {
+  border-color: #9cc3e8;
+}
+
+.article .data-table th,
+.article .data-table td {
+  border-bottom: 1px solid #9cc3e8;
+}
+
+.article .data-table tbody td,
+.article .data-table tbody td:first-child {
+  color: var(--rh-milk);
+}
+
+.article .data-table thead th {
+  border-bottom: 2px solid #9cc3e8;
 }
 
 .stat-row {

@@ -156,6 +156,12 @@ export function Home() {
         </p>
 
         <div className="hero-foot">
+          {site.userCount !== null && (
+            <span className="hero-proof">
+              <span className="hero-proof__dot" aria-hidden="true" />
+              已有 <strong>{site.userCount}</strong> 位用户
+            </span>
+          )}
           <span className="hero-powered">{site.poweredBy}</span>
           {site.footerLine}
           <div className="scroll-hint">

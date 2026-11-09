@@ -71,7 +71,7 @@ export function StrategyDetail() {
 
   return (
     <section className="wrap">
-      <div className="article">
+      <div className="article article--board">
         <Link to="/strategies" className="small muted">
           ← 策略
         </Link>

@@ -15,6 +15,12 @@ export const site = {
   footerLine: '基于工业级引擎 freqtrade 打造，生态成熟，功能强大，在这里开始你的量化之旅。',
   blogUrl: 'https://jianglang740.github.io/my-blog/',
   priceLabel: '35 USD/月',
+  /**
+   * 首页主视觉展示的「已有 xx 位用户」。
+   * 每开通一位客户手动改这里；设为 null 时整行不显示。
+   * 改完需要重新构建前端才会生效：cd web && npm run build
+   */
+  userCount: 32 as number | null,
 };
 
 /** 联系方式：把占位符换成你自己的即可 */

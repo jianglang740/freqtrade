@@ -335,4 +335,4 @@ class TurtleBreakout(IStrategy):
     ) -> float:
         # 固定 1 倍。本项目所有演示策略都锁定 1 倍杠杆，不做杠杆优化 ——
         # 一放大杠杆，回撤也跟着放大，拿高杠杆跑出来的收益曲线没有可比性。
-        return 1.0
+        return 2.0

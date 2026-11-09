@@ -13,19 +13,51 @@
 
 ## 跑起来
 
-```bash
-# 1. 后端（首次需要复制 .env.example 为 .env 并生成两个密钥，见「部署」）
-cd Freq量化官网/web/server
-npm install
-npm run dev          # http://127.0.0.1:3002
+先分清三种启动方式，按你要做什么选一种，不需要每次都全跑。
 
-# 2. 官网（另开一个终端）
-cd Freq量化官网/web
-npm install
-npm run dev          # http://127.0.0.1:4000
+### 方式 A：只想打开网站 / 管内容 / 管用户（最短路径）
+
+后端启动时如果发现 `web/dist/` 里有前端构建产物，会**顺手把整个网站一起托管**。
+所以只起后端就能看到完整官网：
+
+```bash
+cd Freq量化官网/web/server
+npm install          # 首次
+npm run dev          # http://127.0.0.1:3002
 ```
 
-生产构建与启动：
+浏览器打开 `http://127.0.0.1:3002`，首页、策略、因子、`/robots`、`/admin` 都在。
+只跑这一条就能访问成功，是因为 `web/dist/` 已经构建好了。
+
+前提是 `web/dist/index.html` 存在。刚克隆下来、或者删过 `dist/`，先构建一次：
+
+```bash
+cd Freq量化官网/web
+npm install
+npm run build
+```
+
+> 首次还要准备 `server/.env`（复制 `.env.example` 并生成两个密钥），
+> 步骤见「日常使用手册 → 第一次上线」。
+
+### 方式 B：要改前端代码（热更新）
+
+Vite 开发服务器在 4000，保存代码后浏览器自动刷新：
+
+```bash
+# 终端 1：后端
+cd Freq量化官网/web/server
+npm run dev          # 3002
+
+# 终端 2：前端
+cd Freq量化官网/web
+npm run dev          # 4000
+```
+
+开发时打开 `4000`（Vite 会把 `/api` 代理到 3002）。此时打开 3002 看到的仍是
+上一次构建的 `dist`，改代码不会生效。
+
+### 方式 C：生产 / 长期运行
 
 ```bash
 cd Freq量化官网/web
@@ -39,16 +71,110 @@ npm start                     # 一个进程同时托管 web/dist/ 与 /api
 `server/src/env.ts` 会固定读取 `server/.env`，与启动时所在目录无关；
 默认静态目录是 `web/dist`，也可以用 `STATIC_DIR` 覆盖。
 
+## 目录结构
+
+```text
+Freq量化官网/
+├── web/                            # 网站本体（前端 + 后端 + 内容 + 数据）
+│   ├── src/                        # 前端源码（React + TypeScript）
+│   │   ├── pages/                  # 每个路由一个页面
+│   │   │   ├── Home.tsx            #   首页
+│   │   │   ├── Strategies.tsx      #   策略列表
+│   │   │   ├── StrategyDetail.tsx  #   策略详情（回测口径、免责声明）
+│   │   │   ├── Factors.tsx         #   因子库列表
+│   │   │   ├── FactorDetail.tsx    #   因子详情（定义 / 公式 / 用法 / 限制）
+│   │   │   ├── AppPage.tsx         #   安卓 App（FreqDroid）介绍
+│   │   │   ├── Robots.tsx          #   「我的机器人」只读控制台
+│   │   │   ├── Admin.tsx           #   内容管理：策略 / 因子 Markdown 编辑器
+│   │   │   └── AdminUsers.tsx      #   用户管理：账号 + 机器人归属
+│   │   ├── components/             # 可复用组件
+│   │   │   ├── Dock.tsx            #   顶部导航与登录入口
+│   │   │   ├── LoginPanel.tsx      #   登录面板
+│   │   │   ├── AdminGate.tsx       #   管理页的登录 / 权限门
+│   │   │   ├── UserBotsModal.tsx   #   客户 ↔ 机器人绑定弹窗
+│   │   │   ├── ArticleMarkdown.tsx #   Markdown 渲染（策略 / 因子正文）
+│   │   │   ├── EquityCurve.tsx     #   净值曲线
+│   │   │   ├── ContactModal.tsx    #   联系 / 订阅弹窗
+│   │   │   ├── DitherField.tsx     #   背景抖动效果
+│   │   │   └── RobotMark.tsx       #   像素机器人图标
+│   │   ├── lib/                    # 接口封装
+│   │   │   ├── api.ts              #   fetch 封装、登录态、错误翻译
+│   │   │   ├── users.ts            #   用户 / 机器人管理接口
+│   │   │   ├── content.ts          #   策略 / 因子内容接口
+│   │   │   └── useAsync.ts         #   通用异步 hook
+│   │   ├── content/site.ts         # 站名、价格、联系方式、关于我们（静态文案）
+│   │   ├── styles/site.css         # 全站样式（手写 CSS，无 UI 库）
+│   │   ├── App.tsx                 # 路由、页脚、整体骨架
+│   │   └── main.tsx                # 前端入口
+│   ├── server/                     # Express 后端
+│   │   ├── src/
+│   │   │   ├── app.ts              #   中间件与路由装配、静态托管
+│   │   │   ├── index.ts            #   启动入口、优雅退出
+│   │   │   ├── env.ts              #   读取并校验 .env
+│   │   │   ├── db/                 #   SQLite 连接与建表
+│   │   │   ├── routes/             #   HTTP 路由
+│   │   │   │   ├── auth.ts         #     登录 / 退出 / 当前用户
+│   │   │   │   ├── users.ts        #     账号管理（superadmin）
+│   │   │   │   ├── bots.ts         #     机器人登记与归属（superadmin）
+│   │   │   │   ├── proxy.ts        #     透传 freqtrade /api/v1/*
+│   │   │   │   └── content.ts      #     策略 / 因子内容与图片
+│   │   │   ├── services/           #   业务逻辑
+│   │   │   │   ├── auth.ts         #     密码校验、失败锁定
+│   │   │   │   ├── users.ts        #     用户增删改查
+│   │   │   │   ├── bots.ts         #     机器人、归属、到期判断
+│   │   │   │   ├── freqtrade.ts    #     调上游 REST、token 缓存
+│   │   │   │   ├── crypto.ts       #     AES-256-GCM 加解密机器人密码
+│   │   │   │   ├── content.ts      #     Markdown 读写、校验、图片落盘
+│   │   │   │   ├── rateLimit.ts    #     限流器
+│   │   │   │   ├── urlSecurity.ts  #     机器人地址 / 代理路径校验（防 SSRF）
+│   │   │   │   └── audit.ts        #     审计日志
+│   │   │   ├── middleware/         #   auth / CSRF / 限流 / 写权限 / 错误处理
+│   │   │   └── scripts/            #   命令行工具与压测脚本
+│   │   ├── content/                # 运行期读取的内容（要提交、要备份）
+│   │   │   ├── strategies/*.md     #   策略 Markdown
+│   │   │   ├── factors/*.md        #   因子 Markdown
+│   │   │   ├── assets/             #   上传的图片
+│   │   │   └── _trash/             #   删除的内容先挪到这里，不物理删除
+│   │   ├── data/freq.db            # SQLite：用户 / 机器人 / 归属 / 审计（要备份）
+│   │   ├── dist/                   # 后端编译产物（npm run build 生成）
+│   │   ├── .env                    # 本机配置与两个密钥（不提交，要备份）
+│   │   ├── .env.example            # 配置模板
+│   │   └── package.json
+│   ├── dist/                       # 前端构建产物（npm run build 生成，后端托管它）
+│   ├── index.html                  # Vite / 前端入口
+│   ├── vite.config.ts              # 开发代理：/api → 127.0.0.1:3002
+│   ├── package.json
+│   └── README.md                   # 本文
+└── 原始设想/                        # 产品设计资料：设计文档 + 参考截图，不参与运行
+```
+
+几个容易混淆的点：
+
+| 路径                            | 作用                                       | 提交 git           | 备份        |
+| ------------------------------- | ------------------------------------------ | ------------------ | ----------- |
+| `web/src/`、`server/src/`   | 源码                                       | ✅                 | 按 git 即可 |
+| `server/content/`             | 策略 / 因子正文与图片                      | ✅                 | ✅ 必须     |
+| `server/data/freq.db`         | 账号、机器人凭据、归属、审计               | ❌（已 gitignore） | ✅ 必须     |
+| `server/.env`                 | 配置 + `JWT_SECRET` + `ENCRYPTION_KEY` | ❌（已 gitignore） | ✅ 必须     |
+| `web/dist/`、`server/dist/` | 构建产物                                   | ❌（已 gitignore） | 可随时重建  |
+| `node_modules/`               | 依赖                                       | ❌                 | 不需要      |
+
+所以：**源码和内容在 git 里；数据和密钥只在本机**。换机器或部署时，
+除了克隆代码，还要单独带走 `server/data/freq.db`、`server/.env` 和 `server/content/`。
+
+> 注意：`web/dist/` 是构建产物，不会跟着 git 走。新克隆的仓库里没有它，
+> 第一次要么先 `cd web && npm run build`，要么用方式 B 起 Vite。
+
 ## 日常使用手册（运营视角）
 
 这一节写给站长，按场景照做即可，不需要改代码。技术细节在后面几节。
 
 ### 先分清两个角色
 
-| 角色 | 能做什么 | 入口 |
-| --- | --- | --- |
+| 角色                  | 能做什么                                  | 入口                                                               |
+| --------------------- | ----------------------------------------- | ------------------------------------------------------------------ |
 | 管理员 `superadmin` | 建客户、绑机器人、重置密码、发布策略/因子 | 登录后页脚「用户管理」`/admin/users`、页脚「内容管理」`/admin` |
-| 客户 `user` | 登录后看自己名下的机器人，只读 | 顶部导航「登录机器人」→ 登录后变「我的机器人」，即 `/robots` |
+| 客户 `user`         | 登录后看自己名下的机器人，只读            | 顶部导航「登录机器人」→ 登录后变「我的机器人」，即 `/robots`    |
 
 客户**不需要也不应该**知道 freqtrade 的 API 地址和 REST 密码。你只把
 「网站地址 + 用户名 + 初始密码」发给客户即可。
@@ -90,14 +216,12 @@ freqtrade 实例（8080 / 8082 / …）
    openssl rand -base64 32   # 填进 ENCRYPTION_KEY
    npm install
    ```
-
 3. 建第一个管理员。网页登录本身要管理员，所以第一个超管只能用命令行建：
 
    ```bash
    printf '%s' '你的强密码' | npm run user:create -- \
      --username admin --role superadmin --name 站长 --password-stdin
    ```
-
 4. 启动前后端（见上面「跑起来」），直接打开 `http://127.0.0.1:4000/admin/users`
    （生产环境换成你的域名），用 admin 登录。页脚的两个管理入口只对已登录的
    `superadmin` 显示，所以第一次要直接输地址，之后从页脚点进来即可。
@@ -267,28 +391,30 @@ cp .env "backup/env-$(date +%F).bak"
 
 ### 常见问题
 
-| 现象 | 最可能的原因 | 处理 |
-| --- | --- | --- |
-| 客户登录后看不到机器人 | 没绑定 / 绑定已过期 / 账号被停用 | 查归属与到期日；重新绑定或启用账号 |
-| 新建机器人提示连接失败 | freqtrade 没开 `api_server`；地址多了路径；账号密码错；后端访问不到 | 先从后端机器 `curl -u ... /api/v1/ping` 验证 |
-| 提示 `A bot with this name already exists` | 机器人名称全站唯一 | 换名称，或直接绑定已有那台 |
-| 提示 `API URL must not contain a path` | 地址填成了 `http://ip:8080/api/v1` | 只填 `http://ip:8080` |
-| 到期日显示差一天 | 到期日按 UTC 存取，界面也按 UTC 显示 | 正常现象，不要改成本地时区 |
-| 客户说数据不刷新 | 面板 15 秒轮询，后端还有 3–60 秒缓存 | 等 15 秒；仍不动就查 freqtrade 是否在跑 |
-| 账号显示「已锁定」 | 连续输错密码 10 次，锁 15 分钟 | 等 15 分钟，或直接「重置密码」立即解锁 |
-| 我起了新的 freqtrade，网站没自动出现 | 网站不会扫描实例，必须显式登记 | 场景一第 2 步「新建机器人并绑定」 |
-| 管理员自己进不去 | 忘了密码，或唯一的超管被停用 | 用命令行再建一个超管（见「第一次上线」第 3 步） |
+| 现象                                         | 最可能的原因                                                          | 处理                                            |
+| -------------------------------------------- | --------------------------------------------------------------------- | ----------------------------------------------- |
+| 客户登录后看不到机器人                       | 没绑定 / 绑定已过期 / 账号被停用                                      | 查归属与到期日；重新绑定或启用账号              |
+| 新建机器人提示连接失败                       | freqtrade 没开 `api_server`；地址多了路径；账号密码错；后端访问不到 | 先从后端机器 `curl -u ... /api/v1/ping` 验证  |
+| 提示 `A bot with this name already exists` | 机器人名称全站唯一                                                    | 换名称，或直接绑定已有那台                      |
+| 提示 `API URL must not contain a path`     | 地址填成了 `http://ip:8080/api/v1`                                  | 只填 `http://ip:8080`                         |
+| 到期日显示差一天                             | 到期日按 UTC 存取，界面也按 UTC 显示                                  | 正常现象，不要改成本地时区                      |
+| 客户说数据不刷新                             | 面板 15 秒轮询，后端还有 3–60 秒缓存                                 | 等 15 秒；仍不动就查 freqtrade 是否在跑         |
+| 账号显示「已锁定」                           | 连续输错密码 10 次，锁 15 分钟                                        | 等 15 分钟，或直接「重置密码」立即解锁          |
+| 我起了新的 freqtrade，网站没自动出现         | 网站不会扫描实例，必须显式登记                                        | 场景一第 2 步「新建机器人并绑定」               |
+| 管理员自己进不去                             | 忘了密码，或唯一的超管被停用                                          | 用命令行再建一个超管（见「第一次上线」第 3 步） |
 
-## 改内容只看三个地方
+## 改内容只看这几个地方
 
-| 想改什么 | 改哪里 |
-| --- | --- |
-| 策略、因子正文与卡片数据 | `/admin` 网页编辑器，或直接编辑 `server/content/{strategies,factors}/*.md` |
-| 站名、价格、联系方式、关于我们 | `src/content/site.ts` |
-| 颜色、字号、间距 | `src/styles/site.css` 顶部的 `:root` 变量 |
+| 想改什么                       | 改哪里                                                                     |
+| ------------------------------ | -------------------------------------------------------------------------- |
+| 策略、因子正文与卡片数据       | `/admin` 网页编辑器，或直接编辑 `server/content/{strategies,factors}/*.md` |
+| 首页「已有 xx 位用户」         | `src/content/site.ts` 的 `userCount`（改完要 `npm run build`）              |
+| 站名、价格、联系方式、关于我们 | `src/content/site.ts`                                                      |
+| 颜色、字号、间距               | `src/styles/site.css` 顶部的 `:root` 变量                                  |
 
-`src/content/site.ts` 里的 `contact` 有四个 `待填写` 占位符（微信号、邮箱等），
-上线前必须换掉，否则弹窗里显示的就是「待填写」。
+`userCount` 设为 `null` 时整行不显示；填数字后重新构建前端即可。
+`src/content/site.ts` 里的 `contact` 是公开的联系方式，上线前确认微信号和邮箱
+是你愿意对外展示的那一个。
 
 ### 策略 / 因子：Markdown 上传
 
@@ -316,17 +442,17 @@ front matter 字段（不认识的字段会被拒绝，避免拼写错误悄悄�
 
 ## 页面结构
 
-| 路由 | 页面 | 说明 |
-| --- | --- | --- |
-| `/` | 首页 | 主视觉 / 工作原理 / 我们是谁 |
-| `/strategies` | 策略列表 | 卡片：左文字右曲线+价格 |
-| `/strategies/:slug` | 策略详情 | 真实回测口径 + 免责声明 + 订阅按钮 |
-| `/factors` | 因子库 | 静态卡片 |
-| `/factors/:slug` | 因子详情 | 定义 / 公式 / 用法 / 限制 |
-| `/app` | FreqDroid | 安卓 App 介绍 |
-| `/robots` | 我的机器人 | 需要登录，只读控制台 |
-| `/admin` | 内容管理 | 仅 `superadmin`：编辑策略 / 因子 Markdown |
-| `/admin/users` | 用户管理 | 仅 `superadmin`：新建 / 重置密码 / 停用 / 删除 / 机器人归属 / 导出 CSV |
+| 路由                  | 页面       | 说明                                                                     |
+| --------------------- | ---------- | ------------------------------------------------------------------------ |
+| `/`                 | 首页       | 主视觉 / 工作原理 / 我们是谁                                             |
+| `/strategies`       | 策略列表   | 卡片：左文字右曲线+价格                                                  |
+| `/strategies/:slug` | 策略详情   | 真实回测口径 + 免责声明 + 订阅按钮                                       |
+| `/factors`          | 因子库     | 静态卡片                                                                 |
+| `/factors/:slug`    | 因子详情   | 定义 / 公式 / 用法 / 限制                                                |
+| `/app`              | FreqDroid  | 安卓 App 介绍                                                            |
+| `/robots`           | 我的机器人 | 需要登录，只读控制台                                                     |
+| `/admin`            | 内容管理   | 仅 `superadmin`：编辑策略 / 因子 Markdown                              |
+| `/admin/users`      | 用户管理   | 仅 `superadmin`：新建 / 重置密码 / 停用 / 删除 / 机器人归属 / 导出 CSV |
 
 博客是外链，直接跳到 `https://jianglang740.github.io/my-blog/`。
 
@@ -505,11 +631,11 @@ DATABASE_PATH=./data/loadtest.db npx tsx src/scripts/loadtest/run.ts --port 3102
 
 优化前后（50 客户，同 IP/NAT 场景）：
 
-| 阶段 | 优化前 | 优化后 |
-| --- | --- | --- |
-| 稳态 60s | 83.7% 被 429，p95 24ms | **0 错误**，10.4 req/s，p95 22–24ms，p99 28ms |
-| 突发 10 轮同时刷新 | 87.6% 被 429 | **0 错误**，31.7 req/s，p95 52ms |
-| 50 人同时登录 | 全部 429 | 10 成功 + 40 个 429（符合预期），最慢 2.8s |
+| 阶段               | 优化前                 | 优化后                                               |
+| ------------------ | ---------------------- | ---------------------------------------------------- |
+| 稳态 60s           | 83.7% 被 429，p95 24ms | **0 错误**，10.4 req/s，p95 22–24ms，p99 28ms |
+| 突发 10 轮同时刷新 | 87.6% 被 429           | **0 错误**，31.7 req/s，p95 52ms               |
+| 50 人同时登录      | 全部 429               | 10 成功 + 40 个 429（符合预期），最慢 2.8s           |
 
 容量余量：100 客户稳态 21 req/s、突发 64 req/s 也是 0 错误，p95 分别为 25ms / 70ms；
 服务端 CPU 峰值 < 20%，常驻内存 100–160 MiB（测试用的 mock 延迟只有 8ms，
@@ -547,27 +673,27 @@ server {
 
 环境变量全部在 `web/server/.env`（参考 `.env.example`）：
 
-| 变量 | 默认 | 说明 |
-| --- | --- | --- |
-| `NODE_ENV` | `development` | 生产设 `production`，Cookie 默认加 `Secure` |
-| `PORT` / `HOST` | `3002` / `127.0.0.1` | 只监听本机，前面交给 Nginx |
-| `DATABASE_PATH` | `./data/freq.db` | 相对路径以 `server/` 为基准 |
-| `JWT_SECRET` | 必填 | `openssl rand -base64 48` |
-| `ENCRYPTION_KEY` | 必填 | 32 字节 base64：`openssl rand -base64 32` |
-| `SESSION_HOURS` | `12` | Cookie 与 JWT 有效期 |
-| `COOKIE_SECURE` | 由 `NODE_ENV` 推导 | 本地 http 调试设 `false`；生产 HTTPS 设 `true` |
-| `CUSTOMER_READ_ONLY` | `true` | 非 superadmin 写操作 403 |
-| `PUBLIC_ORIGINS` | 本地 4000 | CSRF 白名单，逗号分隔 |
-| `BOT_ALLOW_PRIVATE` | `true` | 允许机器人地址是回环/内网（freqtrade 常在本机） |
-| `TRUST_PROXY` | `false` | 放在 Nginx 后面必须设 `true`，否则限流把所有人算成 127.0.0.1 |
-| `STATIC_DIR` | `web/dist` | 前端产物目录 |
-| `CONTENT_DIR` | `server/content` | 策略 / 因子 Markdown 与图片目录；相对路径以 `server/` 为基准 |
-| `LOG_REQUESTS` | `false` | 默认只记错误和慢请求；排查问题时再打开 |
-| `RATE_LIMIT_USER_PER_MIN` | `600` | 每登录用户的总 API 请求 |
-| `RATE_LIMIT_PROXY_USER_PER_MIN` | `300` | 每登录用户的代理请求 |
-| `RATE_LIMIT_PROXY_BOT_PER_MIN` | `240` | 每台机器人的代理请求（多户共用一台机器人时共享额度） |
-| `RATE_LIMIT_API_IP_PER_MIN` | `3000` | 每 IP 兜底，只防事故不误伤 NAT |
-| `RATE_LIMIT_LOGIN_PER_15MIN` | `10` | 每 IP 登录尝试次数，安全相关，别随意放大 |
+| 变量                              | 默认                     | 说明                                                           |
+| --------------------------------- | ------------------------ | -------------------------------------------------------------- |
+| `NODE_ENV`                      | `development`          | 生产设 `production`，Cookie 默认加 `Secure`                |
+| `PORT` / `HOST`               | `3002` / `127.0.0.1` | 只监听本机，前面交给 Nginx                                     |
+| `DATABASE_PATH`                 | `./data/freq.db`       | 相对路径以 `server/` 为基准                                  |
+| `JWT_SECRET`                    | 必填                     | `openssl rand -base64 48`                                    |
+| `ENCRYPTION_KEY`                | 必填                     | 32 字节 base64：`openssl rand -base64 32`                    |
+| `SESSION_HOURS`                 | `12`                   | Cookie 与 JWT 有效期                                           |
+| `COOKIE_SECURE`                 | 由 `NODE_ENV` 推导     | 本地 http 调试设 `false`；生产 HTTPS 设 `true`             |
+| `CUSTOMER_READ_ONLY`            | `true`                 | 非 superadmin 写操作 403                                       |
+| `PUBLIC_ORIGINS`                | 本地 4000                | CSRF 白名单，逗号分隔                                          |
+| `BOT_ALLOW_PRIVATE`             | `true`                 | 允许机器人地址是回环/内网（freqtrade 常在本机）                |
+| `TRUST_PROXY`                   | `false`                | 放在 Nginx 后面必须设 `true`，否则限流把所有人算成 127.0.0.1 |
+| `STATIC_DIR`                    | `web/dist`             | 前端产物目录                                                   |
+| `CONTENT_DIR`                   | `server/content`       | 策略 / 因子 Markdown 与图片目录；相对路径以 `server/` 为基准 |
+| `LOG_REQUESTS`                  | `false`                | 默认只记错误和慢请求；排查问题时再打开                         |
+| `RATE_LIMIT_USER_PER_MIN`       | `600`                  | 每登录用户的总 API 请求                                        |
+| `RATE_LIMIT_PROXY_USER_PER_MIN` | `300`                  | 每登录用户的代理请求                                           |
+| `RATE_LIMIT_PROXY_BOT_PER_MIN`  | `240`                  | 每台机器人的代理请求（多户共用一台机器人时共享额度）           |
+| `RATE_LIMIT_API_IP_PER_MIN`     | `3000`                 | 每 IP 兜底，只防事故不误伤 NAT                                 |
+| `RATE_LIMIT_LOGIN_PER_15MIN`    | `10`                   | 每 IP 登录尝试次数，安全相关，别随意放大                       |
 
 注意：
 
