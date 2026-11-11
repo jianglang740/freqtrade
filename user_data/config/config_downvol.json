@@ -1,0 +1,80 @@
+{
+    "$schema": "https://schema.freqtrade.io/schema.json",
+    "//": "DownsideVol 回测配置（策略池/AlphaPilot复现 S4）。研究口径：18 个 U 本位永续、日线、3bp、真实资金费。",
+    "trading_mode": "futures",
+    "margin_mode": "cross",
+    "//max_open_trades": "目标是 8 笔（4 多 4 空）；留到 12 是为了同一根 K 线上先开新腿、后平旧腿时不至于卡槽。",
+    "max_open_trades": 12,
+    "stake_currency": "USDT",
+    "stake_amount": "unlimited",
+    "tradable_balance_ratio": 1,
+    "dry_run": true,
+    "dry_run_wallet": 10000,
+    "timeframe": "1d",
+    "cancel_open_orders_on_exit": true,
+    "unfilledtimeout": {
+        "entry": 10,
+        "exit": 30
+    },
+    "exchange": {
+        "name": "binance",
+        "key": "",
+        "secret": "",
+        "enable_ws": false,
+        "ccxt_config": {
+            "socksProxy": "socks5h://127.0.0.1:1080"
+        },
+        "ccxt_async_config": {
+            "socksProxy": "socks5h://127.0.0.1:1080"
+        },
+        "pair_whitelist": [
+            "AAVE/USDT:USDT",
+            "ADA/USDT:USDT",
+            "APT/USDT:USDT",
+            "ARB/USDT:USDT",
+            "AVAX/USDT:USDT",
+            "BNB/USDT:USDT",
+            "BTC/USDT:USDT",
+            "DOGE/USDT:USDT",
+            "DOT/USDT:USDT",
+            "ETH/USDT:USDT",
+            "LINK/USDT:USDT",
+            "LTC/USDT:USDT",
+            "NEAR/USDT:USDT",
+            "OP/USDT:USDT",
+            "SOL/USDT:USDT",
+            "SUI/USDT:USDT",
+            "UNI/USDT:USDT",
+            "XRP/USDT:USDT"
+        ],
+        "pair_blacklist": []
+    },
+    "order_types": {
+        "entry": "market",
+        "exit": "market",
+        "stoploss": "market",
+        "stoploss_on_exchange": false
+    },
+    "entry_pricing": {
+        "price_side": "other",
+        "use_order_book": true,
+        "order_book_top": 1
+    },
+    "exit_pricing": {
+        "price_side": "other",
+        "use_order_book": true,
+        "order_book_top": 1
+    },
+    "pairlists": [
+        {
+            "method": "StaticPairList"
+        }
+    ],
+    "bot_name": "downvol_1d",
+    "initial_state": "stopped",
+    "internals": {
+        "process_throttle_secs": 300
+    },
+    "db_url": "sqlite:///tradesv3.downvol.sqlite",
+    "dataformat_ohlcv": "feather"
+}

@@ -1,0 +1,63 @@
+{
+    "$schema": "https://schema.freqtrade.io/schema.json",
+    "//": "CryptoBreakout 回测配置（策略池/AlphaPilot复现 S1）。研究口径：BTC/ETH 1h、3bp、真实资金费。",
+    "trading_mode": "futures",
+    "margin_mode": "cross",
+    "max_open_trades": 2,
+    "stake_currency": "USDT",
+    "stake_amount": "unlimited",
+    "tradable_balance_ratio": 1,
+    "dry_run": true,
+    "dry_run_wallet": 10000,
+    "timeframe": "1h",
+    "cancel_open_orders_on_exit": true,
+    "unfilledtimeout": {
+        "entry": 10,
+        "exit": 30
+    },
+    "exchange": {
+        "name": "binance",
+        "key": "",
+        "secret": "",
+        "enable_ws": false,
+        "ccxt_config": {
+            "socksProxy": "socks5h://127.0.0.1:1080"
+        },
+        "ccxt_async_config": {
+            "socksProxy": "socks5h://127.0.0.1:1080"
+        },
+        "pair_whitelist": [
+            "BTC/USDT:USDT",
+            "ETH/USDT:USDT"
+        ],
+        "pair_blacklist": []
+    },
+    "order_types": {
+        "entry": "market",
+        "exit": "market",
+        "stoploss": "market",
+        "stoploss_on_exchange": false
+    },
+    "entry_pricing": {
+        "price_side": "other",
+        "use_order_book": true,
+        "order_book_top": 1
+    },
+    "exit_pricing": {
+        "price_side": "other",
+        "use_order_book": true,
+        "order_book_top": 1
+    },
+    "pairlists": [
+        {
+            "method": "StaticPairList"
+        }
+    ],
+    "bot_name": "breakout_1h",
+    "initial_state": "stopped",
+    "internals": {
+        "process_throttle_secs": 300
+    },
+    "db_url": "sqlite:///tradesv3.breakout.sqlite",
+    "dataformat_ohlcv": "feather"
+}
