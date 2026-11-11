@@ -25,7 +25,7 @@ export const site = {
 
 /** 联系方式：把占位符换成你自己的即可 */
 export const contact = {
-  wechat: '15085111840',
+  wechat: 'szmyssyyjyjrsspa',
   email: '2018036661@qq.com',
   github: 'github.com/jianglang740',
   githubUrl: 'https://github.com/jianglang740',
