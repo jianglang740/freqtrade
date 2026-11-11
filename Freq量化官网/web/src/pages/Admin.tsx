@@ -512,7 +512,8 @@ function AdminConsole({ user, onLogout }: { user: SiteUser; onLogout: () => void
               <strong>策略</strong>：<code>slug</code>（必须与文件名一致）、<code>name</code>、
               <code>latin</code>、<code>tagline</code>、<code>desc</code>、
               <code>status</code>（<code>live</code> 或 <code>paper</code>）、
-              <code>statusLabel</code>、<code>metrics</code>（最多 6 条 label/value）、
+              <code>statusLabel</code>、<code>priceLabel</code>（可选，仅 <code>status: live</code> 生效，
+              如 <code>45 USD/月</code>；不写则用全站价格）、<code>metrics</code>（最多 6 条 label/value）、
               <code>curve</code>（数字数组，或 <code>null</code>）、<code>curveNote</code>、
               <code>disclaimer</code>、<code>published</code>、<code>order</code>。
             </p>

@@ -54,7 +54,7 @@ export function Strategies() {
             <Link key={s.slug} to={`/strategies/${s.slug}`} className="strategy-card">
               <div className="strategy-card__body">
                 <div className="metric-label">
-                  {s.latin} · {s.statusLabel}
+                  {s.latin} · <span style={{ whiteSpace: 'nowrap' }}>{s.statusLabel}</span>
                 </div>
                 <div className="strategy-card__title">{s.name}</div>
                 <p className="strategy-card__desc">{s.desc}</p>
@@ -71,7 +71,9 @@ export function Strategies() {
               <div className="strategy-card__chart">
                 <EquityCurve data={s.curve} label={s.curveNote} />
                 <div className="strategy-card__price">
-                  {s.status === 'live' ? `获取订阅｜${site.priceLabel}` : '暂不开放订阅'}
+                  {s.status === 'live'
+                    ? `获取订阅｜${s.priceLabel ?? site.priceLabel}`
+                    : '模拟盘观察中，暂不开放订阅'}
                 </div>
               </div>
             </Link>
@@ -80,7 +82,7 @@ export function Strategies() {
       )}
 
       <p className="small muted" style={{ marginTop: 28, letterSpacing: '0.06em' }}>
-        * 标记「模拟盘观察中」的策略只在我们的模拟账户上运行，不对外销售。
+        * 标记「开放订阅」的策略可以订阅；标记「模拟盘观察中」的策略正在我们的模拟账户上运行，暂不对外销售。
       </p>
     </section>
   );

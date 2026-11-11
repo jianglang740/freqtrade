@@ -21,6 +21,7 @@ export function StrategyDetail() {
   );
 
   const meta = data?.meta;
+  const priceLabel = meta?.priceLabel ?? site.priceLabel;
 
   usePageMeta({ title: meta?.name, description: meta?.desc });
 
@@ -98,7 +99,7 @@ export function StrategyDetail() {
             <div style={{ marginTop: 'auto' }}>
               <div className="metric-label">订阅价格</div>
               <div className="metric-value" style={{ color: 'var(--rh-gold)', fontSize: 30 }}>
-                {meta.status === 'live' ? site.priceLabel : '暂不开放'}
+                {meta.status === 'live' ? priceLabel : '暂不开放'}
               </div>
               <button
                 className="btn btn--primary"
@@ -106,7 +107,7 @@ export function StrategyDetail() {
                 onClick={contact.open}
                 disabled={meta.status !== 'live'}
               >
-                {meta.status === 'live' ? `获取订阅｜${site.priceLabel}` : '模拟盘观察中'}
+                {meta.status === 'live' ? `获取订阅｜${priceLabel}` : '暂不开放订阅'}
               </button>
             </div>
           </div>
@@ -123,7 +124,7 @@ export function StrategyDetail() {
             onClick={contact.open}
             disabled={meta.status !== 'live'}
           >
-            {meta.status === 'live' ? `获取订阅｜${site.priceLabel}` : '暂不开放订阅'}
+            {meta.status === 'live' ? `获取订阅｜${priceLabel}` : '暂不开放订阅'}
           </button>
           <Link className="btn" to="/strategies">
             看看其他策略

@@ -5,7 +5,7 @@ latin: XSEC-MOMENTUM
 tagline: 按照特定的筛选规则选出流动性符合要求的币池，包含50个币，然后在这流动性最好的 50 个币里，做多风险调整动量最强的一档，做空最弱的一档。
 desc: 每天用 7 / 14 / 28 日「动量 ÷ 波动率」给币池打分，做多前 20%、做空后 20%，两条腿等权。赚的是强币与弱币之间的价差，不是大盘的涨跌。
 status: live
-statusLabel: 已上线
+statusLabel: 开放订阅
 metrics:
   - label: 年化
     value: 35%

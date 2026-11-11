@@ -68,6 +68,7 @@ export const strategyMetaSchema = z
     desc: z.string().trim().min(1).max(1000),
     status: z.enum(['live', 'paper']),
     statusLabel: z.string().trim().min(1).max(32).optional(),
+    priceLabel: z.string().trim().min(1).max(64).optional(),
     metrics: z.array(metricSchema).max(6).default([]),
     curve: z.array(z.number()).max(5000).nullable().default(null),
     curveNote: z.string().trim().max(500).default(''),
