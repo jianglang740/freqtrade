@@ -16,7 +16,7 @@ metrics:
 curve: null
 curveNote: 实盘回测口径整理中，暂不公开曲线
 disclaimer: 该策略目前仅处于模拟盘观察阶段，不对外提供订阅，也不构成任何投资建议。
-published: true
+published: false
 order: 20
 ---
 
